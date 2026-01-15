@@ -105,7 +105,7 @@ BMAD Framework:
 └── create-epics-and-stories workflow (guided process)
 
 Claude Skills:
-├── .claude/rules/epic-structure.md (auto-applied standards)
+├── .claude/rules/epic-standards.md (auto-applied standards)
 └── .claude/rules/epic-templates.md (templates)
 ```
 

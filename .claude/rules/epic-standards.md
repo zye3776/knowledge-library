@@ -9,22 +9,24 @@ paths:
 <critical_rules>
 When creating or editing epics in `_bmad-output/planning-artifacts/epics/`, follow these standards:
 
+## Epics Define WHAT, Not HOW
+Epics and stories describe requirements and acceptance criteria only. Technical implementation details (code patterns, file structures, architecture) are created separately in implementation plans.
+
 ## Self-Contained Epics
 - All context required for epic development MUST be embedded within the epic folder
 - Source documents may be removed after epic creation
-- `overview.md` must contain complete architectural decisions, tech stack, and context
 - Story files reference `../overview.md` for context, NOT external files
 
 ## Every AC Must Be Measurable
-Every acceptance criterion MUST have a verifiable bash command in the "Measurable Outcomes" section.
+Every acceptance criterion MUST have a verifiable bash command in the Verification section.
 </critical_rules>
 
 ## Directory Structure
 
 ```
 _bmad-output/planning-artifacts/epics/epic-{N}-{slug}/
-├── overview.md              # Epic-level technical specification
-├── sprint-status.yaml       # Status tracking for dev workflow
+├── overview.md              # Epic-level requirements
+├── sprint-status.yaml       # Status tracking
 └── stories/
     ├── index.md             # Stories overview + dependency graph
     ├── {N}-1-{slug}.md      # Story files
@@ -44,9 +46,9 @@ backlog -> draft -> ready-for-dev -> in-progress -> review -> done
 
 ## File Templates
 
-For detailed templates, see [templates.md](epic-templates.md).
+For detailed templates, see [epic-templates.md](epic-templates.md) and [story-templates.md](story-templates.md).
 
-## Measurable Outcomes Patterns
+## Verification Patterns
 
 **Command Exit Codes:**
 ```bash
@@ -106,22 +108,31 @@ Co-Authored-By: Claude {Model} <noreply@anthropic.com>"
 
 When creating epics, verify:
 - [ ] Epic is SELF-CONTAINED (no external file references)
-- [ ] overview.md has ALL architectural decisions embedded
 - [ ] Story Context References point only to `../overview.md`
-- [ ] Every AC has a measurable outcome
+- [ ] Every AC has a measurable verification command
 - [ ] Tasks reference which ACs they satisfy
 - [ ] Dependencies listed in index.md
-- [ ] Code patterns in Dev Notes
-- [ ] Testing Strategy defined
-- [ ] Files to Create/Modify table present
 - [ ] sprint-status.yaml has all stories
 - [ ] Stories are atomic
 
 <constraints>
+## Do NOT Include in Epics/Stories:
+- Code patterns or examples
+- File structures or paths to create
+- Architecture diagrams
+- Dev Notes / Implementation guidance
+- Testing strategy details
+- Dev Agent Record sections
+
+These belong in implementation plans, created separately.
+
 ## Do NOT:
-- Reference external files from stories (embed context in overview.md)
+- Reference external files from stories
 - Create ACs without measurable bash verification commands
-- Skip the Dev Agent Record section in stories
 - Forget to update sprint-status.yaml when story status changes
 - Create stories that span multiple unrelated concerns
 </constraints>
+
+<system_reminder>
+Epics and stories define WHAT needs to be done, not HOW. Technical implementation plans are created separately based on epic and story files.
+</system_reminder>
