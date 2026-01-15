@@ -1,0 +1,96 @@
+skill:
+  metadata:
+    id: _bmad/custom/skills/tts-say/tts-say.skill.md
+    name: "macOS TTS (say)"
+    description: "Text-to-speech using macOS say command. No API key required. Requires premium voices to be downloaded."
+    icon: "🗣️"
+
+  install_config:
+    description: "Configure your macOS TTS settings"
+    questions:
+      - var: default_voice
+        type: text
+        prompt: 'Default voice name (run `say -v "?" | grep Premium` to list available)'
+        default: "Jamie (Premium)"
+
+      - var: default_rate
+        type: choice
+        prompt: "Default speaking rate (words per minute)"
+        default: "160"
+        options:
+          - { label: "Slow (120 WPM)", value: "120" }
+          - { label: "Normal (160 WPM)", value: "160" }
+          - { label: "Fast (200 WPM)", value: "200" }
+          - { label: "Very Fast (240 WPM)", value: "240" }
+
+  setup: |
+    ## Requirements
+
+    macOS only - uses the built-in `say` command.
+
+    ### Installing Premium Voices
+
+    1. Open **System Settings** → **Accessibility** → **Spoken Content**
+    2. Click **System Voice** dropdown → **Manage Voices...**
+    3. Download desired premium voices (look for "Premium" label)
+    4. Recommended: Jamie (Premium), Samantha (Premium), Tom (Premium)
+
+    ### Discovering Available Voices
+
+    ```bash
+    # List all premium voices
+    say -v '?' | grep -E "(Premium)"
+
+    # List all voices
+    say -v '?'
+    ```
+
+  usage: |
+    ## Direct text
+    ```bash
+    say -v "{{default_voice}}" -r {{default_rate}} "Your text here"
+    ```
+
+    ## From file
+    ```bash
+    say -v "{{default_voice}}" -r {{default_rate}} -f /path/to/file.txt
+    ```
+
+    ## Save to audio file
+    ```bash
+    say -v "{{default_voice}}" -r {{default_rate}} -o /tmp/output.aiff "Your text here"
+    ```
+
+  sections:
+    Parameters: |
+      | Param | Type | Default | Description |
+      |-------|------|---------|-------------|
+      | `-v` | string | {{default_voice}} | Voice name |
+      | `-r` | number | {{default_rate}} | Words per minute (80-300) |
+      | `-f` | string | - | Read from file instead of argument |
+      | `-o` | string | - | Save to audio file instead of playing |
+
+    Integration: |
+      Other skills can invoke TTS by:
+      1. Preparing text content
+      2. Optionally saving to a temp file
+      3. Running the `say` command with appropriate parameters
+
+      Example from doc-digest:
+      ```bash
+      say -v "{{default_voice}}" -r {{default_rate}} -f /tmp/digest.txt
+      ```
+
+    Error Handling: |
+      | Error | Cause | Resolution |
+      |-------|-------|------------|
+      | Voice not found | Premium voice not installed | Download from System Settings |
+      | No premium voices | None installed | See Setup section |
+      | File not found | Invalid file path | Verify file exists |
+      | Rate out of range | Rate < 80 or > 300 | Use rate between 80-300 |
+
+    Platform Support: |
+      Currently macOS only. Future implementations could support:
+      - Linux: `espeak`, `festival`
+      - Windows: SAPI
+      - Cross-platform: Cloud TTS APIs

@@ -1,0 +1,12 @@
+{
+  "name": "tts-openai",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "build": "bun build scripts/speak.ts --compile --outfile scripts/speak"
+  },
+  "dependencies": {
+    "commander": "^14.0.0",
+    "openai": "^4.76.0"
+  }
+}

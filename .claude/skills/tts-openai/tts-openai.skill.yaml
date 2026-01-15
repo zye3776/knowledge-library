@@ -1,0 +1,129 @@
+skill:
+  metadata:
+    id: _bmad/custom/skills/tts-openai/tts-openai.skill.md
+    name: "OpenAI TTS"
+    description: "High-quality text-to-speech using OpenAI TTS API. Supports chunked paragraph-by-paragraph playback with pause/resume. Requires OPENAI_API_KEY."
+    icon: "🔊"
+
+  install_config:
+    description: "Configure your OpenAI TTS settings"
+    questions:
+      - var: default_voice
+        type: choice
+        prompt: "Default voice for speech synthesis"
+        default: nova
+        options:
+          - { label: "Nova - Friendly, natural (recommended)", value: "nova" }
+          - { label: "Alloy - Neutral, balanced", value: "alloy" }
+          - { label: "Echo - Warm, conversational", value: "echo" }
+          - { label: "Fable - Expressive, British accent", value: "fable" }
+          - { label: "Onyx - Deep, authoritative", value: "onyx" }
+          - { label: "Shimmer - Soft, gentle", value: "shimmer" }
+
+      - var: default_model
+        type: choice
+        prompt: "Default TTS model"
+        default: tts-1
+        options:
+          - { label: "tts-1 - Good quality, faster ($15/1M chars)", value: "tts-1" }
+          - { label: "tts-1-hd - Premium quality ($30/1M chars)", value: "tts-1-hd" }
+
+  setup: |
+    ## Requirements
+
+    1. **OpenAI API Key** - Set in `.env` file in scripts directory:
+       ```bash
+       echo 'OPENAI_API_KEY="your-key-here"' > scripts/.env
+       ```
+
+    2. **Python dependencies** - Auto-installed on first run via virtual environment
+
+  usage: |
+    ## Single File Mode (Original)
+
+    ```bash
+    # Speak text directly
+    python3 scripts/speak.py "Hello world"
+
+    # Read from file
+    python3 scripts/speak.py -f /tmp/digest.txt
+
+    # Choose voice
+    python3 scripts/speak.py -v {{default_voice}} -f /tmp/digest.txt
+
+    # Save to file instead of playing
+    python3 scripts/speak.py -o output.mp3 -f /tmp/digest.txt
+    ```
+
+    ## Chunked Paragraph Mode (For Long Documents)
+
+    Splits text into paragraphs, generates audio for each, and plays sequentially.
+    Supports pause/resume - perfect for long documents.
+
+    ```bash
+    # Generate and play paragraph by paragraph
+    python3 scripts/speak.py --chunked -f document.txt -d /path/to/output
+
+    # Generate only (don't play)
+    python3 scripts/speak.py --chunked --generate-only -f doc.txt -d /path/to/output
+
+    # Resume from last position
+    python3 scripts/speak.py --resume -d /path/to/output
+
+    # Stop playback (saves position)
+    python3 scripts/speak.py --stop
+
+    # Check playback status
+    python3 scripts/speak.py --status -d /path/to/output
+    ```
+
+    ## Playback Controls
+
+    Progress bar displays as:
+    ```
+    [████████░░░░░░░░░░░░] 3/14 | 2:35 remaining
+    ```
+
+    - **Terminate anytime** - position auto-saves after each paragraph
+    - **Resume**: Use `--resume -d /path` to continue from last paragraph
+    - **Status**: Use `--status -d /path` to see progress
+    - **Stop**: Use `--stop` to immediately stop (optional - just terminating works too)
+
+  sections:
+    Chunked Output Structure: |
+      When using `--chunked`, the output directory contains:
+
+      ```
+      /path/to/output/
+      ├── paragraphs.json    # Paragraph text and metadata
+      ├── playback.json      # Playback state (position, status)
+      └── paragraphs/        # Audio files
+          ├── 001.mp3
+          ├── 002.mp3
+          └── ...
+      ```
+
+      **Note:** `playback.json` tracks playback position and should not be
+      committed to source control (add to .gitignore).
+
+    Voices: |
+      | Voice | Description |
+      |-------|-------------|
+      | alloy | Neutral, balanced |
+      | echo | Warm, conversational |
+      | fable | Expressive, British accent |
+      | nova | Friendly, natural (default) |
+      | onyx | Deep, authoritative |
+      | shimmer | Soft, gentle |
+
+    Models: |
+      | Model | Quality | Cost |
+      |-------|---------|------|
+      | tts-1 | Good (default) | $15 / 1M chars |
+      | tts-1-hd | Premium | $30 / 1M chars |
+
+      Use `--model tts-1-hd` for higher quality when needed.
+
+    Cost Estimate: |
+      - ~300 words ≈ 1,500 characters
+      - 1 hour/day usage ≈ $0.70/month (tts-1)
