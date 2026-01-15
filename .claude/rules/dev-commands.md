@@ -225,3 +225,18 @@ Reference commands in CLAUDE.md to encourage usage:
 Run /commit after making changes.
 Use /review before submitting PRs.
 ```
+
+## Additional Resources
+
+For questions about Claude Code slash commands not covered here, use the deepwiki MCP tool:
+
+```
+mcp__deepwiki__ask_question
+  repoName: "anthropics/claude-code"
+  question: "Your specific question about commands"
+```
+
+Example queries:
+- "How does the `!` prefix bash execution work in slash commands?"
+- "What happens when context: fork is used with a command?"
+- "How do command arguments get parsed and passed?"

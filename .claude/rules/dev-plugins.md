@@ -270,3 +270,18 @@ Higher priority overrides lower when names conflict.
 4. Version semantically - breaking changes = major version bump
 5. Test before publishing - install locally and verify all features
 6. Scope tools appropriately - restrict tools in skills/agents for safety
+
+## Additional Resources
+
+For questions about Claude Code plugins not covered here, use the deepwiki MCP tool:
+
+```
+mcp__deepwiki__ask_question
+  repoName: "anthropics/claude-code"
+  question: "Your specific question about plugins"
+```
+
+Example queries:
+- "How does plugin namespacing work for skills and agents?"
+- "What fields are supported in plugin.json manifest?"
+- "How do MCP servers get bundled with plugins?"

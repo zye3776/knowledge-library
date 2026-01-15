@@ -196,6 +196,21 @@ hooks:
 | Best for | Context isolation, tool restriction | Teaching Claude workflows |
 | Location | `.claude/agents/` | `.claude/skills/` |
 
+## Additional Resources
+
+For questions about Claude Code subagents not covered here, use the deepwiki MCP tool:
+
+```
+mcp__deepwiki__ask_question
+  repoName: "anthropics/claude-code"
+  question: "Your specific question about agents"
+```
+
+Example queries:
+- "How does the Task tool invoke custom subagents?"
+- "What permission modes are available for subagents?"
+- "How do subagent hooks work with SubagentStart/SubagentStop?"
+
 ## Example: Complete Subagent
 
 ```yaml
