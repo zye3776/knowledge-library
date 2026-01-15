@@ -1,0 +1,20 @@
+# Dependencies
+node_modules/
+
+# Bun build artifacts
+*.bun-build
+.*.bun-build
+
+# Compiled binary (rebuild with: bun run build)
+scripts/speak
+
+# Lock files (optional - can be committed if you want reproducible builds)
+bun.lock
+
+# Python artifacts (legacy)
+__pycache__/
+*.pyc
+.venv/
+
+# macOS
+.DS_Store

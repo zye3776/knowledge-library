@@ -31,28 +31,34 @@ skill:
   setup: |
     ## Requirements
 
-    1. **OpenAI API Key** - Set in `.env` file in scripts directory:
+    1. **OpenAI API Key** - Set as environment variable:
        ```bash
-       echo 'OPENAI_API_KEY="your-key-here"' > scripts/.env
+       export OPENAI_API_KEY="your-key-here"
        ```
 
-    2. **Python dependencies** - Auto-installed on first run via virtual environment
+    2. **Build the executable** (one-time setup):
+       ```bash
+       cd .claude/skills/tts-openai
+       bun install
+       bun run build
+       ```
+       This creates `scripts/speak` - a standalone executable with no runtime dependencies.
 
   usage: |
-    ## Single File Mode (Original)
+    ## Single File Mode (Basic)
 
     ```bash
     # Speak text directly
-    python3 scripts/speak.py "Hello world"
+    ./scripts/speak "Hello world"
 
     # Read from file
-    python3 scripts/speak.py -f /tmp/digest.txt
+    ./scripts/speak -f /tmp/digest.txt
 
     # Choose voice
-    python3 scripts/speak.py -v {{default_voice}} -f /tmp/digest.txt
+    ./scripts/speak -v {{default_voice}} -f /tmp/digest.txt
 
     # Save to file instead of playing
-    python3 scripts/speak.py -o output.mp3 -f /tmp/digest.txt
+    ./scripts/speak -o output.mp3 -f /tmp/digest.txt
     ```
 
     ## Chunked Paragraph Mode (For Long Documents)
@@ -62,19 +68,19 @@ skill:
 
     ```bash
     # Generate and play paragraph by paragraph
-    python3 scripts/speak.py --chunked -f document.txt -d /path/to/output
+    ./scripts/speak --chunked -f document.txt -d /path/to/output
 
     # Generate only (don't play)
-    python3 scripts/speak.py --chunked --generate-only -f doc.txt -d /path/to/output
+    ./scripts/speak --chunked --generate-only -f doc.txt -d /path/to/output
 
     # Resume from last position
-    python3 scripts/speak.py --resume -d /path/to/output
+    ./scripts/speak --resume -d /path/to/output
 
     # Stop playback (saves position)
-    python3 scripts/speak.py --stop
+    ./scripts/speak --stop
 
     # Check playback status
-    python3 scripts/speak.py --status -d /path/to/output
+    ./scripts/speak --status -d /path/to/output
     ```
 
     ## Playback Controls
