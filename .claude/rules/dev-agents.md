@@ -1,22 +1,26 @@
 ---
-name: dev-guide-subagents
-description: Development guide for creating Claude Code Subagents. Use when building custom agents, understanding context isolation, or configuring the Task tool.
-allowed-tools: Read, Glob, Grep
+paths:
+  - ".claude/agents/**/*.md"
+  - "~/.claude/agents/**/*.md"
+  - "**/agents/**/*.md"
 ---
 
-# Claude Code Subagents Development Guide
+# Subagents Development Standards
 
-## What Are Subagents?
+<critical_rules>
+When creating or editing agent files, follow these standards:
 
-Subagents are specialized AI assistants that run in **separate context windows** with their own system prompt, tool access, permissions, and conversation history. Claude delegates to them automatically based on task description matching.
+## Required Frontmatter Fields
+- `name`: Unique identifier (lowercase, hyphens)
+- `description`: When Claude should delegate to this agent
 
-## When to Use Subagents
+## Tool Restriction Field Names
+- Use `tools:` (NOT `allowed-tools:`) for allowlist
+- Use `disallowedTools:` for denylist
 
-Choose subagents when you need:
-- Context isolation (prevent verbose output from polluting main conversation)
-- Tool restrictions (limit what Claude can do for safety)
-- Different model selection (faster/cheaper for specific tasks)
-- Parallel task execution (background processing)
+## Agents Run in Isolated Context
+Each invocation creates new instance with independent history, token budget, and permissions.
+</critical_rules>
 
 ## Agent File Structure
 
@@ -41,11 +45,11 @@ Instructions that guide the subagent's behavior.
 |-------|----------|-------------|
 | `name` | Yes | Unique identifier (lowercase, hyphens) |
 | `description` | Yes | When Claude should delegate to this agent |
-| `tools` | No | Tools agent can use. Inherits all if omitted |
-| `disallowedTools` | No | Tools to deny (removed from inherited list) |
+| `tools` | No | Tools agent can use (allowlist). Inherits all if omitted |
+| `disallowedTools` | No | Tools to deny (denylist, removed from inherited) |
 | `model` | No | `sonnet`, `opus`, `haiku`, or `inherit`. Default: `sonnet` |
 | `permissionMode` | No | Permission handling mode |
-| `skills` | No | Skills to load into agent's context |
+| `skills` | No | Skills to auto-load into agent's context |
 | `hooks` | No | Lifecycle hooks |
 
 ## Permission Modes
@@ -60,17 +64,23 @@ Instructions that guide the subagent's behavior.
 
 ## Tool Restrictions
 
-**Allowlist approach:**
+### Allowlist Approach
+
+Specify only the tools the agent can use:
+
 ```yaml
 tools: Read, Grep, Glob, Bash
 ```
 
-**Denylist approach:**
+### Denylist Approach
+
+Block specific tools while inheriting the rest:
+
 ```yaml
 disallowedTools: Write, Edit
 ```
 
-## Agent Locations
+## Agent Locations and Priority
 
 | Location | Scope | Priority |
 |----------|-------|----------|
@@ -86,7 +96,7 @@ Claude invokes subagents via the Task tool automatically when:
 2. User explicitly requests: "use the code-reviewer agent"
 3. Task needs context isolation
 
-**Invocation patterns:**
+Invocation patterns:
 ```
 # Automatic (Claude matches description)
 Analyze this code for performance issues
@@ -137,7 +147,8 @@ Resumed subagents retain full conversation history from previous invocation.
 
 ## Hooks
 
-**In agent frontmatter:**
+### In Agent Frontmatter
+
 ```yaml
 ---
 name: db-reader
@@ -151,7 +162,8 @@ hooks:
 ---
 ```
 
-**In settings.json (lifecycle events):**
+### In settings.json (Lifecycle Events)
+
 ```json
 {
   "hooks": {
@@ -166,6 +178,23 @@ hooks:
   }
 }
 ```
+
+<constraints>
+## Do NOT:
+- Use `allowed-tools:` (use `tools:` instead for agents)
+- Omit description (Claude needs it to match tasks)
+- Use both `tools:` and `disallowedTools:` together (pick one approach)
+- Expect background agents to have MCP access
+</constraints>
+
+## Subagents vs Skills
+
+| Aspect | Subagents | Skills |
+|--------|-----------|--------|
+| Context | Isolated, separate | Main conversation |
+| Persistence | Per-session, resumable | Per-conversation |
+| Best for | Context isolation, tool restriction | Teaching Claude workflows |
+| Location | `.claude/agents/` | `.claude/skills/` |
 
 ## Example: Complete Subagent
 
@@ -209,11 +238,3 @@ You are a senior code reviewer ensuring high standards.
 ### Suggestions (consider)
 ...
 ```
-
-## Subagents vs Skills
-
-| Aspect | Subagents | Skills |
-|--------|-----------|--------|
-| Context | Isolated, separate | Main conversation |
-| Persistence | Per-session, resumable | Per-conversation |
-| Best for | Context isolation, tool restriction | Teaching Claude workflows |

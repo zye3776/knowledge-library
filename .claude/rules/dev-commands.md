@@ -1,37 +1,27 @@
 ---
-name: dev-guide-commands
-description: Development guide for creating Claude Code Slash Commands. Use when building quick prompts, understanding $ARGUMENTS syntax, or creating user-invoked shortcuts.
-allowed-tools: Read, Glob, Grep
+paths:
+  - ".claude/commands/**/*.md"
+  - "~/.claude/commands/**/*.md"
 ---
 
-# Claude Code Slash Commands Development Guide
+# Slash Commands Development Standards
 
-## What Are Slash Commands?
+<critical_rules>
+When creating or editing slash command files, follow these standards:
 
-Slash commands are frequently used prompts stored as Markdown files. Unlike skills (automatic), **commands are explicitly invoked** by typing `/command-name`.
+## Commands Are Single .md Files
+Store in `.claude/commands/` directory. File path determines command name.
 
-## When to Use Commands
+## Argument Syntax
+- `$ARGUMENTS` - All arguments as single string
+- `$1`, `$2`, `$3` - Individual positional arguments
 
-Choose slash commands when you need:
-- Quick, reusable prompts
-- Explicit user invocation (`/command`)
-- Simple single-file structure
-- High-frequency manual triggers
+## Dynamic Context Prefixes
+- `!` prefix - Execute bash command inline: `!`git status``
+- `@` prefix - Include file contents: `@src/utils.js`
+</critical_rules>
 
-## File Structure
-
-Commands are single `.md` files in `.claude/commands/`:
-
-```
-.claude/
-└── commands/
-    ├── optimize.md        # /optimize
-    ├── review.md          # /review
-    └── frontend/
-        └── component.md   # /component (namespace: project:frontend)
-```
-
-## Command Locations
+## File Locations and Priority
 
 | Location | Scope | Priority |
 |----------|-------|----------|
@@ -40,17 +30,18 @@ Commands are single `.md` files in `.claude/commands/`:
 
 Project commands override personal commands with same name.
 
-## Basic Command
+## Namespace Organization
 
-```markdown
-Analyze this code for performance issues and suggest optimizations.
-Focus on:
-- Algorithm complexity
-- Memory usage
-- I/O operations
+Subdirectories create namespaces:
+
 ```
-
-Save as `.claude/commands/optimize.md`, invoke with `/optimize`.
+.claude/commands/
+├── review.md                    # /review
+├── frontend/
+│   └── component.md             # /component (namespace: project:frontend)
+└── backend/
+    └── api.md                   # /api (namespace: project:backend)
+```
 
 ## Frontmatter Options
 
@@ -70,8 +61,6 @@ hooks:
         - type: command
           command: "./scripts/validate.sh"
 ---
-
-Command content here...
 ```
 
 | Field | Purpose | Default |
@@ -85,7 +74,7 @@ Command content here...
 | `disable-model-invocation` | Block Skill tool invocation | `false` |
 | `hooks` | Lifecycle hooks | None |
 
-## Arguments
+## Argument Handling
 
 ### All Arguments with `$ARGUMENTS`
 
@@ -94,7 +83,7 @@ Fix issue #$ARGUMENTS following our coding standards.
 ```
 
 Usage: `/fix-issue 123 high-priority`
-`$ARGUMENTS` becomes: `123 high-priority`
+Result: `$ARGUMENTS` becomes `123 high-priority`
 
 ### Individual Arguments with `$1`, `$2`, etc.
 
@@ -109,7 +98,7 @@ Usage: `/review-pr 456 high alice`
 
 ## Bash Execution with `!`
 
-Use `!` prefix to execute bash commands inline:
+Execute bash commands inline and include output:
 
 ```markdown
 ---
@@ -129,7 +118,7 @@ Create a commit based on the changes above.
 
 ## File References with `@`
 
-Use `@` prefix to include file contents:
+Include file contents directly:
 
 ```markdown
 Review the implementation in @src/utils/helpers.js
@@ -137,24 +126,9 @@ Review the implementation in @src/utils/helpers.js
 Compare @src/old-version.js with @src/new-version.js
 ```
 
-## Namespace Organization
-
-Subdirectories create namespaces:
-
-```
-.claude/commands/
-├── review.md                    # /review (project)
-├── frontend/
-│   └── component.md             # /component (project:frontend)
-└── backend/
-    └── api.md                   # /api (project:backend)
-```
-
-Commands in different subdirectories can share names (distinguished by namespace).
-
 ## Context Fork
 
-Run command in isolated subagent:
+Run command in isolated subagent for verbose output:
 
 ```yaml
 ---
@@ -166,6 +140,26 @@ allowed-tools: Read, Grep, Glob
 Analyze the entire codebase and generate a report.
 This may produce verbose output.
 ```
+
+<constraints>
+## Do NOT:
+- Forget to add `allowed-tools` when using Bash commands
+- Use $0 (it doesn't exist, start with $1)
+- Mix up `!` (bash execution) with `@` (file inclusion)
+- Create deeply nested command hierarchies
+</constraints>
+
+## Commands vs Skills
+
+| Aspect | Commands | Skills |
+|--------|----------|--------|
+| Invocation | Explicit `/command` | Automatic |
+| Structure | Single `.md` file | Directory + SKILL.md |
+| Supporting files | No | Yes (scripts, docs) |
+| Best for | Quick prompts | Complex workflows |
+| Arguments | `$ARGUMENTS`, `$1`, `$2` | N/A |
+| Bash execution | `!` prefix | Via allowed-tools |
+| File inclusion | `@` prefix | Reference in markdown |
 
 ## Example: Git Commit Command
 
@@ -219,18 +213,6 @@ Review the code in $ARGUMENTS for:
 
 Provide specific suggestions with file:line references.
 ```
-
-## Commands vs Skills
-
-| Aspect | Commands | Skills |
-|--------|----------|--------|
-| Invocation | Explicit `/command` | Automatic |
-| Structure | Single `.md` file | Directory + SKILL.md |
-| Supporting files | No | Yes (scripts, docs) |
-| Best for | Quick prompts | Complex workflows |
-| Arguments | `$ARGUMENTS`, `$1`, `$2` | N/A |
-| Bash execution | `!` prefix | Via allowed-tools |
-| File inclusion | `@` prefix | Reference in markdown |
 
 ## The Skill Tool
 

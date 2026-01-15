@@ -1,29 +1,33 @@
 ---
-name: dev-guide-plugins
-description: Development guide for creating Claude Code Plugins. Use when packaging skills, agents, and commands for distribution or understanding plugin structure.
-allowed-tools: Read, Glob, Grep
+paths:
+  - ".claude-plugin/**"
+  - "**/.claude-plugin/**"
+  - "**/plugin.json"
 ---
 
-# Claude Code Plugins Development Guide
+# Plugins Development Standards
 
-## What Are Plugins?
+<critical_rules>
+When creating or editing plugin files, follow these standards:
 
-Plugins are packaged extensions you can install and share. They bundle skills, agents, commands, hooks, and MCP servers into a distributable format.
+## Only `name` Is Required in plugin.json
+All other fields are optional (version defaults to `0.1.0` if omitted).
 
-## When to Use Plugins
+## Directory Structure Requirements
+- `.claude-plugin/plugin.json` must exist at plugin root
+- Component directories (`skills/`, `agents/`, `commands/`, `hooks/`) at plugin root
+- Do NOT nest component directories inside `.claude-plugin/`
 
-Choose plugins when you need:
-- Share capabilities across multiple repositories
-- Distribute to other users
-- Bundle related skills, agents, and commands together
-- Include MCP server configurations
+## Namespacing
+Plugin components inherit namespace: `my-plugin:skill-name`, `my-plugin:agent-name`
+</critical_rules>
 
 ## Plugin Structure
 
 ```
 my-plugin/
 ├── .claude-plugin/
-│   └── plugin.json          # Plugin manifest
+│   └── plugin.json          # Plugin manifest (only name required)
 ├── skills/
 │   └── my-skill/
 │       ├── SKILL.md
@@ -39,6 +43,29 @@ my-plugin/
 ```
 
 ## plugin.json Manifest
+
+### Minimal (Only Required Field)
+
+```json
+{
+  "name": "my-plugin"
+}
+```
+
+### Recommended (With Metadata)
+
+```json
+{
+  "name": "my-plugin",
+  "version": "1.0.0",
+  "description": "Description of what this plugin does",
+  "author": "Your Name",
+  "repository": "https://github.com/user/my-plugin",
+  "license": "MIT"
+}
+```
+
+### Full (With All Options)
 
 ```json
 {
@@ -78,9 +105,9 @@ my-plugin/
 
 | Field | Required | Description |
 |-------|----------|-------------|
-| `name` | Yes | Plugin identifier (lowercase, hyphens) |
-| `version` | Yes | Semantic version (e.g., `1.0.0`) |
-| `description` | Yes | What the plugin does |
+| `name` | **Yes** | Plugin identifier (lowercase, hyphens, unique across installed plugins) |
+| `version` | No | Semantic version (defaults to `0.1.0`) |
+| `description` | No | What the plugin does |
 | `author` | No | Plugin author |
 | `repository` | No | Source repository URL |
 | `license` | No | License identifier |
@@ -176,18 +203,14 @@ Bundle MCP servers:
 
 ## Installation
 
-**From local directory:**
 ```bash
+# From local directory
 claude plugins install ./my-plugin
-```
 
-**From git repository:**
-```bash
+# From git repository
 claude plugins install github:user/my-plugin
-```
 
-**From marketplace (if published):**
-```bash
+# From marketplace (if published)
 claude plugins install my-plugin
 ```
 
@@ -207,42 +230,14 @@ claude plugins install my-plugin
 
 Higher priority overrides lower when names conflict.
 
-## Example: Knowledge Library Plugin
-
-```
-knowledge-library/
-├── .claude-plugin/
-│   └── plugin.json
-├── skills/
-│   ├── extract-youtube/
-│   │   ├── SKILL.md
-│   │   └── scripts/
-│   │       └── yt-dlp-wrapper.sh
-│   ├── rephrase-content/
-│   │   └── SKILL.md
-│   └── consume-tts/
-│       ├── SKILL.md
-│       └── scripts/
-│           └── openai-tts.py
-├── agents/
-│   └── extractor.md
-├── commands/
-│   └── kl.md
-└── README.md
-```
-
-**plugin.json:**
-```json
-{
-  "name": "knowledge-library",
-  "version": "0.1.0",
-  "description": "Extract, rephrase, and consume content from YouTube and other sources",
-  "author": "Z",
-  "skills": ["skills/*"],
-  "agents": ["agents/*"],
-  "commands": ["commands/*"]
-}
-```
+<constraints>
+## Do NOT:
+- Nest component directories inside `.claude-plugin/`
+- Use names that conflict with existing plugins
+- Forget to use kebab-case for plugin names
+- Omit the `name` field (only required field)
+- Assume version/description are required (they're not)
+</constraints>
 
 ## Development Workflow
 
@@ -253,7 +248,7 @@ knowledge-library/
 
 2. **Add plugin.json:**
    ```bash
-   echo '{"name": "my-plugin", "version": "0.1.0", "description": "..."}' > my-plugin/.claude-plugin/plugin.json
+   echo '{"name": "my-plugin"}' > my-plugin/.claude-plugin/plugin.json
    ```
 
 3. **Develop skills/agents/commands** in respective directories
@@ -269,9 +264,9 @@ knowledge-library/
 
 ## Best Practices
 
-1. **Keep SKILL.md under 500 lines** - use reference files for details
-2. **Write clear descriptions** - Claude uses them for auto-discovery
-3. **Include README.md** - document what the plugin provides
-4. **Version semantically** - breaking changes = major version bump
-5. **Test before publishing** - install locally and verify all features
-6. **Scope tools appropriately** - restrict tools in skills/agents for safety
+1. Keep SKILL.md under 500 lines - use reference files for details
+2. Write clear descriptions - Claude uses them for auto-discovery
+3. Include README.md - document what the plugin provides
+4. Version semantically - breaking changes = major version bump
+5. Test before publishing - install locally and verify all features
+6. Scope tools appropriately - restrict tools in skills/agents for safety
