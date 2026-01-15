@@ -1,7 +1,6 @@
 ---
 name: smart-commit
 description: Split local git changes into multiple logical commits grouped by functionality. Use when committing multiple unrelated changes, organizing messy working directories, or creating clean commit history. Analyzes files and prompts user before each commit group.
-context: fork
 ---
 
 # Smart Commit
