@@ -1,23 +1,9 @@
 ---
 name: 'step-01-validate-prerequisites'
 description: 'Validate required documents exist and extract all requirements for epic and story creation'
-
-# Path Definitions
-workflow_path: '{project-root}/_bmad/bmm/workflows/3-solutioning/create-epics-and-stories'
-
-# File References
-thisStepFile: './step-01-validate-prerequisites.md'
 nextStepFile: './step-02-design-epics.md'
-workflowFile: '{workflow_path}/workflow.md'
-outputFile: '{planning_artifacts}/epics.md'
-epicsTemplate: '{workflow_path}/templates/epics-template.md'
-
-# Task References
-advancedElicitationTask: '{project-root}/_bmad/core/workflows/advanced-elicitation/workflow.xml'
-partyModeWorkflow: '{project-root}/_bmad/core/workflows/party-mode/workflow.md'
-
-# Template References
-epicsTemplate: '{workflow_path}/templates/epics-template.md'
+epics_folder: '{planning_artifacts}/epics'
+indexFile: '{planning_artifacts}/epics/index.md'
 ---
 
 # Step 1: Validate Prerequisites and Extract Requirements
@@ -54,7 +40,7 @@ To validate that all required input documents exist and extract all requirements
 ## EXECUTION PROTOCOLS:
 
 - 🎯 Extract requirements systematically from all documents
-- 💾 Populate {outputFile} with extracted requirements
+- 💾 Populate {indexFile} with extracted requirements
 - 📖 Update frontmatter with extraction progress
 - 🚫 FORBIDDEN to load next step until user selects 'C' and requirements are extracted
 
@@ -91,7 +77,7 @@ Search for required documents using these patterns (sharded means a large docume
 1. `{planning_artifacts}/*ux*.md` (whole document)
 2. `{planning_artifacts}/*ux*/index.md` (sharded version)
 
-Before proceeding, Ask the user if there are any other documents to include for analysis, and if anything found should be excluded. Wait for user confirmation. Once confirmed, create the {outputFile} from the {epicsTemplate} and in the front matter list the files in the array of `inputDocuments: []`.
+Before proceeding, Ask the user if there are any other documents to include for analysis, and if anything found should be excluded. Wait for user confirmation. Once confirmed, create {indexFile} with extracted requirements and in the front matter list the files in the array of `inputDocuments: []`.
 
 ### 3. Extract Functional Requirements (FRs)
 
@@ -169,17 +155,23 @@ Review the UX document for requirements that affect epic and story creation:
 
 **Add these to Additional Requirements list.**
 
-### 7. Load and Initialize Template
+### 7. Create Epics Folder and Index
 
-Load {epicsTemplate} and initialize {outputFile}:
+Create the epics folder structure and index file:
 
-1. Copy the entire template to {outputFile}
-2. Replace {{project_name}} with the actual project name
-3. Replace placeholder sections with extracted requirements:
-   - {{fr_list}} → extracted FRs
-   - {{nfr_list}} → extracted NFRs
-   - {{additional_requirements}} → extracted additional requirements
-4. Leave {{requirements_coverage_map}} and {{epics_list}} as placeholders for now
+```bash
+mkdir -p {epics_folder}
+```
+
+Create {indexFile} with extracted requirements:
+
+1. Add YAML frontmatter with `stepsCompleted: []`, `inputDocuments: []`, `generated: {date}`, `project: {name}`
+2. Add project name as main header
+3. Add Requirements Inventory section:
+   - Functional Requirements (extracted FRs)
+   - Non-Functional Requirements (extracted NFRs)
+   - Additional Requirements (from Architecture/UX)
+4. Leave Epic List section empty for Step 2
 
 ### 8. Present Extracted Requirements
 
@@ -211,7 +203,7 @@ Update the requirements based on user feedback until confirmation is received.
 
 ## CONTENT TO SAVE TO DOCUMENT:
 
-After extraction and confirmation, update {outputFile} with:
+After extraction and confirmation, update {indexFile} with:
 
 - Complete FR list in {{fr_list}} section
 - Complete NFR list in {{nfr_list}} section
@@ -221,16 +213,16 @@ After extraction and confirmation, update {outputFile} with:
 
 Display: `**Confirm the Requirements are complete and correct to [C] continue:**`
 
+#### Menu Handling Logic:
+
+- IF C: Save all to {indexFile}, update frontmatter, only then load, read entire file, then execute {nextStepFile}
+- IF Any other comments or queries: help user respond then [Redisplay Menu Options](#10-present-menu-options)
+
 #### EXECUTION RULES:
 
 - ALWAYS halt and wait for user input after presenting menu
 - ONLY proceed to next step when user selects 'C'
 - User can chat or ask questions - always respond and then end with display again of the menu option
-
-#### Menu Handling Logic:
-
-- IF C: Save all to {outputFile}, update frontmatter, only then load, read entire file, then execute {nextStepFile}
-- IF Any other comments or queries: help user respond then [Redisplay Menu Options](#10-present-menu-options)
 
 ## CRITICAL STEP COMPLETION NOTE
 
@@ -243,10 +235,9 @@ ONLY WHEN C is selected and all requirements are saved to document and frontmatt
 ### ✅ SUCCESS:
 
 - All required documents found and validated
-- All FRs extracted and formatted correctly
-- All NFRs extracted and formatted correctly
+- All FRs and NFRs extracted and formatted correctly
 - Additional requirements from Architecture/UX identified
-- Template initialized with requirements
+- Epics folder and index initialized with requirements
 - User confirms requirements are complete and accurate
 
 ### ❌ SYSTEM FAILURE:

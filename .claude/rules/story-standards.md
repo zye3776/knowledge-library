@@ -1,6 +1,6 @@
 ---
 paths:
-  - "_bmad-output/planning-artifacts/epics.md"
+  - "_bmad-output/planning-artifacts/epics/index.md"
   - "_bmad-output/planning-artifacts/epics/**/stories/**"
   - "_bmad-output/planning-artifacts/epics/**/*-*.md"
 ---
@@ -14,12 +14,12 @@ Stories describe requirements and acceptance criteria only. Technical implementa
 </critical_rules>
 
 This document defines standards for two distinct story contexts:
-1. **Epic Planning Stories** - Stories in epics.md during planning phase
+1. **Epic Planning Stories** - Stories in epics/index.md during planning phase
 2. **Story Files** - Individual story files for implementation
 
 ---
 
-## Epic Planning Stories (in epics.md)
+## Epic Planning Stories (in epics/index.md)
 
 <critical_rules>
 ### User Perspective ONLY

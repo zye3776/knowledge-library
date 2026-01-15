@@ -1,22 +1,10 @@
 ---
 name: 'step-02-design-epics'
 description: 'Design and approve the epics_list that will organize all requirements into user-value-focused epics'
-
-# Path Definitions
-workflow_path: '{project-root}/_bmad/bmm/workflows/3-solutioning/create-epics-and-stories'
-
-# File References
-thisStepFile: './step-02-design-epics.md'
 nextStepFile: './step-03-create-stories.md'
-workflowFile: '{workflow_path}/workflow.md'
-outputFile: '{planning_artifacts}/epics.md'
-
-# Task References
+indexFile: '{planning_artifacts}/epics/index.md'
 advancedElicitationTask: '{project-root}/_bmad/core/workflows/advanced-elicitation/workflow.xml'
 partyModeWorkflow: '{project-root}/_bmad/core/workflows/party-mode/workflow.md'
-
-# Template References
-epicsTemplate: '{workflow_path}/templates/epics-template.md'
 ---
 
 # Step 2: Design Epic List
@@ -54,7 +42,7 @@ To design and get approval for the epics_list that will organize all requirement
 ## EXECUTION PROTOCOLS:
 
 - 🎯 Design epics collaboratively based on extracted requirements
-- 💾 Update {{epics_list}} in {outputFile}
+- 💾 Update {{epics_list}} in {indexFile}
 - 📖 Document the FR coverage mapping
 - 🚫 FORBIDDEN to load next step until user approves epics_list
 
@@ -62,7 +50,7 @@ To design and get approval for the epics_list that will organize all requirement
 
 ### 1. Review Extracted Requirements
 
-Load {outputFile} and review:
+Load {indexFile} and review:
 
 - **Functional Requirements:** Count and review FRs from Step 1
 - **Non-Functional Requirements:** Review NFRs that need to be addressed
@@ -182,7 +170,7 @@ If user wants changes:
 
 ## CONTENT TO UPDATE IN DOCUMENT:
 
-After approval, update {outputFile}:
+After approval, update {indexFile}:
 
 1. Replace {{epics_list}} placeholder with the approved epic list
 2. Replace {{requirements_coverage_map}} with the coverage map
@@ -194,9 +182,9 @@ Display: "**Select an Option:** [A] Advanced Elicitation [P] Party Mode [C] Cont
 
 #### Menu Handling Logic:
 
-- IF A: Execute {advancedElicitationTask}
-- IF P: Execute {partyModeWorkflow}
-- IF C: Save approved epics_list to {outputFile}, update frontmatter, then only then load, read entire file, then execute {nextStepFile}
+- IF A: Execute {advancedElicitationTask}, and when finished redisplay the menu
+- IF P: Execute {partyModeWorkflow}, and when finished redisplay the menu
+- IF C: Save approved epics_list to {indexFile}, update frontmatter, then only then load, read entire file, then execute {nextStepFile}
 - IF Any other comments or queries: help user respond then [Redisplay Menu Options](#8-present-menu-options)
 
 #### EXECUTION RULES:

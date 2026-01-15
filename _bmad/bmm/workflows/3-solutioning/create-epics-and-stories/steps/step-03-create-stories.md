@@ -1,29 +1,35 @@
 ---
 name: 'step-03-create-stories'
-description: 'Generate all epics with their stories following the template structure'
-
-# Path Definitions
-workflow_path: '{project-root}/_bmad/bmm/workflows/3-solutioning/create-epics-and-stories'
-
-# File References
-thisStepFile: './step-03-create-stories.md'
+description: 'Generate all epics with their stories as individual files following project standards'
+epics_folder: '{planning_artifacts}/epics'
 nextStepFile: './step-04-final-validation.md'
-workflowFile: '{workflow_path}/workflow.md'
-outputFile: '{planning_artifacts}/epics.md'
-
-# Task References
+indexFile: '{planning_artifacts}/epics/index.md'
+epicStandards: '{project-root}/.claude/rules/epic-standards.md'
+storyStandards: '{project-root}/.claude/rules/story-standards.md'
+storyBmadSkill: '{project-root}/.claude/rules/story-bmad-skill.md'
+epicTemplates: '../templates/epic-templates.md'
+storyTemplates: '../templates/story-templates.md'
 advancedElicitationTask: '{project-root}/_bmad/core/workflows/advanced-elicitation/workflow.xml'
 partyModeWorkflow: '{project-root}/_bmad/core/workflows/party-mode/workflow.md'
-
-# Template References
-epicsTemplate: '{workflow_path}/templates/epics-template.md'
 ---
 
 # Step 3: Generate Epics and Stories
 
 ## STEP GOAL:
 
-To generate all epics with their stories based on the approved epics_list, following the template structure exactly.
+To generate all epics with their stories as individual files in the proper folder structure, following the standards defined in `.claude/rules/`.
+
+## CRITICAL: STANDARDS ENFORCEMENT
+
+**Before creating ANY epic or story files, you MUST read and follow:**
+
+1. **{epicStandards}** - Epic folder structure and requirements
+2. **{epicTemplates}** - Templates for overview.md and sprint-status.yaml
+3. **{storyStandards}** - Story file standards (user-focused, no implementation details)
+4. **{storyTemplates}** - Templates for story files
+5. **{storyBmadSkill}** - Component distribution decisions (BMAD vs Claude Skills)
+
+**These files are the SINGLE SOURCE OF TRUTH. Do not deviate from them.**
 
 ## MANDATORY EXECUTION RULES (READ FIRST):
 
@@ -54,174 +60,116 @@ To generate all epics with their stories based on the approved epics_list, follo
 ## EXECUTION PROTOCOLS:
 
 - 🎯 Generate stories collaboratively with user input
-- 💾 Append epics and stories to {outputFile} following template
+- 💾 Create epic folders and story files in {epics_folder}/
 - 📖 Process epics one at a time in sequence
 - 🚫 FORBIDDEN to skip any epic or rush through stories
+- 📋 MUST follow templates from {epicTemplates} and {storyTemplates}
 
 ## STORY GENERATION PROCESS:
 
-### 1. Load Approved Epic Structure
+### 1. Load Standards and Templates
 
-Load {outputFile} and review:
+**MANDATORY: Read these files before proceeding:**
 
+```
+Read {epicStandards}      # Epic folder structure requirements
+Read {epicTemplates}      # Templates for overview.md, sprint-status.yaml
+Read {storyStandards}     # Story standards (WHAT not HOW)
+Read {storyTemplates}     # Story file templates
+```
+
+Load {indexFile} and review:
 - Approved epics_list from Step 2
 - FR coverage map
 - All requirements (FRs, NFRs, additional)
-- Template structure at the end of the document
 
-### 2. Explain Story Creation Approach
+### 2. Story Creation Guidelines
 
-**STORY CREATION GUIDELINES:**
+**CRITICAL RULE: Stories describe WHAT, not HOW**
 
-For each epic, create stories that:
-
-- Follow the exact template structure
-- Are sized for single dev agent completion
-- Have clear user value
-- Include specific acceptance criteria
-- Reference requirements being fulfilled
-
-**🚨 DATABASE/ENTITY CREATION PRINCIPLE:**
-Create tables/entities ONLY when needed by the story:
-
-- ❌ WRONG: Epic 1 Story 1 creates all 50 database tables
-- ✅ RIGHT: Each story creates/alters ONLY the tables it needs
+Stories must be USER-FOCUSED:
+- ✅ Describe user actions and observable outcomes
+- ✅ Use Given/When/Then acceptance criteria
+- ❌ NO file paths or folder structures
+- ❌ NO code patterns or technical implementation details
+- ❌ NO architecture decisions
 
 **🔗 STORY DEPENDENCY PRINCIPLE:**
-Stories must be independently completable in sequence:
-
-- ❌ WRONG: Story 1.2 requires Story 1.3 to be completed first
-- ✅ RIGHT: Each story can be completed based only on previous stories
+- Each story can be completed based only on previous stories
 - ❌ WRONG: "Wait for Story 1.4 to be implemented before this works"
 - ✅ RIGHT: "This story works independently and enables future stories"
 
-**STORY FORMAT (from template):**
+### 3. Create Epic Folder Structure
+
+For each epic, create this folder structure:
 
 ```
-### Story {N}.{M}: {story_title}
-
-As a {user_type},
-I want {capability},
-So that {value_benefit}.
-
-**Acceptance Criteria:**
-
-**Given** {precondition}
-**When** {action}
-**Then** {expected_outcome}
-**And** {additional_criteria}
+{epics_folder}/epic-{N}-{slug}/
+├── overview.md              # From {epicTemplates}
+├── sprint-status.yaml       # From {epicTemplates}
+└── stories/
+    ├── index.md             # Stories overview + dependency graph
+    ├── {N}-1-{slug}.md      # Story files from {storyTemplates}
+    ├── {N}-2-{slug}.md
+    └── ...
 ```
 
-**✅ GOOD STORY EXAMPLES:**
+**Naming Conventions:**
+- Epic folder: `epic-{number}-{kebab-case-slug}` (e.g., `epic-1-youtube-content-extraction`)
+- Story files: `{epic}-{story}-{kebab-case-slug}.md` (e.g., `1-1-extract-youtube-transcript.md`)
 
-_Epic 1: User Authentication_
-
-- Story 1.1: User Registration with Email
-- Story 1.2: User Login with Password
-- Story 1.3: Password Reset via Email
-
-_Epic 2: Content Creation_
-
-- Story 2.1: Create New Blog Post
-- Story 2.2: Edit Existing Blog Post
-- Story 2.3: Publish Blog Post
-
-**❌ BAD STORY EXAMPLES:**
-
-- Story: "Set up database" (no user value)
-- Story: "Create all models" (too large, no user value)
-- Story: "Build authentication system" (too large)
-- Story: "Login UI (depends on Story 1.3 API endpoint)" (future dependency!)
-- Story: "Edit post (requires Story 1.4 to be implemented first)" (wrong order!)
-
-### 3. Process Epics Sequentially
+### 4. Process Epics Sequentially
 
 For each epic in the approved epics_list:
 
-#### A. Epic Overview
+#### A. Create Epic Folder
+```bash
+mkdir -p {epics_folder}/epic-{N}-{slug}/stories
+```
 
-Display:
+#### B. Create overview.md
+Use template from **{epicTemplates}** section "overview.md"
 
-- Epic number and title
-- Epic goal statement
-- FRs covered by this epic
-- Any NFRs or additional requirements relevant
+#### C. Create sprint-status.yaml
+Use template from **{epicTemplates}** section "sprint-status.yaml"
+- Set epic status to `backlog`
+- Set first story to `ready-for-dev`
+- Set remaining stories to `backlog`
 
-#### B. Story Breakdown
+#### D. Create stories/index.md
+Use template from **{storyTemplates}** section "3. Stories Index"
 
-Work with user to break down the epic into stories:
+#### E. Create Individual Story Files
+Use template from **{storyTemplates}** section "2. Story File"
 
-- Identify distinct user capabilities
-- Ensure logical flow within the epic
-- Size stories appropriately
+**DO NOT duplicate templates here - reference {storyTemplates} directly.**
 
-#### C. Generate Each Story
+#### F. Collaborative Review
+After creating each story file:
+- Present to user for approval
+- Verify it follows {storyStandards}
+- Ensure NO implementation details leaked in
 
-For each story in the epic:
+### 5. Epic Completion
 
-1. **Story Title**: Clear, action-oriented
-2. **User Story**: Complete the As a/I want/So that format
-3. **Acceptance Criteria**: Write specific, testable criteria
-
-**AC Writing Guidelines:**
-
-- Use Given/When/Then format
-- Each AC should be independently testable
-- Include edge cases and error conditions
-- Reference specific requirements when applicable
-
-#### D. Collaborative Review
-
-After writing each story:
-
-- Present the story to user
-- Ask: "Does this story capture the requirement correctly?"
-- "Is the scope appropriate for a single dev session?"
-- "Are the acceptance criteria complete and testable?"
-
-#### E. Append to Document
-
-When story is approved:
-
-- Append it to {outputFile} following template structure
-- Use correct numbering (Epic N, Story M)
-- Maintain proper markdown formatting
-
-### 4. Epic Completion
-
-After all stories for an epic are complete:
-
-- Display epic summary
-- Show count of stories created
+After all files for an epic are created:
+- Display summary of files created
 - Verify all FRs for the epic are covered
 - Get user confirmation to proceed to next epic
 
-### 5. Repeat for All Epics
+### 6. Update Index with Epic Folder References
 
-Continue the process for each epic in the approved list, processing them in order (Epic 1, Epic 2, etc.).
+After all epics are created, update {indexFile} to add epic folder references:
 
-### 6. Final Document Completion
+```markdown
+## Epic Folders
 
-After all epics and stories are generated:
-
-- Verify the document follows template structure exactly
-- Ensure all placeholders are replaced
-- Confirm all FRs are covered
-- Check formatting consistency
-
-## TEMPLATE STRUCTURE COMPLIANCE:
-
-The final {outputFile} must follow this structure exactly:
-
-1. **Overview** section with project name
-2. **Requirements Inventory** with all three subsections populated
-3. **FR Coverage Map** showing requirement to epic mapping
-4. **Epic List** with approved epic structure
-5. **Epic sections** for each epic (N = 1, 2, 3...)
-   - Epic title and goal
-   - All stories for that epic (M = 1, 2, 3...)
-     - Story title and user story
-     - Acceptance Criteria using Given/When/Then format
+| Epic | Folder | Status |
+|------|--------|--------|
+| Epic 1 | [epic-1-{slug}](./epic-1-{slug}/) | backlog |
+| Epic 2 | [epic-2-{slug}](./epic-2-{slug}/) | backlog |
+...
+```
 
 ### 7. Present FINAL MENU OPTIONS
 
@@ -231,9 +179,9 @@ Display: "**Select an Option:** [A] Advanced Elicitation [P] Party Mode [C] Cont
 
 #### Menu Handling Logic:
 
-- IF A: Execute {advancedElicitationTask}
-- IF P: Execute {partyModeWorkflow}
-- IF C: Save content to {outputFile}, update frontmatter, then only then load, read entire file, then execute {nextStepFile}
+- IF A: Execute {advancedElicitationTask}, and when finished redisplay the menu
+- IF P: Execute {partyModeWorkflow}, and when finished redisplay the menu
+- IF C: Save content to {indexFile}, update frontmatter, then only then load, read entire file, then execute {nextStepFile}
 - IF Any other comments or queries: help user respond then [Redisplay Menu Options](#7-present-final-menu-options)
 
 #### EXECUTION RULES:
