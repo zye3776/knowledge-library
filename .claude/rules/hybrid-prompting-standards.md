@@ -1,11 +1,6 @@
 ---
 paths:
-  - ".claude/skills/**/*.md"
-  - ".claude/skills/**/SKILL.md"
-  - "**/skills/**/*.md"
-  - "**/*skill*.md"
-  - ".claude/commands/**/*.md"
-  - ".claude/agents/**/*.md"
+  - "**/*.md"
 ---
 
 # Hybrid XML + Markdown Formatting Standards
