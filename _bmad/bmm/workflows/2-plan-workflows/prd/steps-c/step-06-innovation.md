@@ -2,17 +2,12 @@
 name: 'step-06-innovation'
 description: 'Detect and explore innovative aspects of the product (optional step)'
 
-# Path Definitions
-workflow_path: '{project-root}/_bmad/bmm/workflows/2-plan-workflows/prd'
-
 # File References
-thisStepFile: '{workflow_path}/steps/step-06-innovation.md'
-nextStepFile: '{workflow_path}/steps/step-07-project-type.md'
-workflowFile: '{workflow_path}/workflow.md'
+nextStepFile: './step-07-project-type.md'
 outputFile: '{planning_artifacts}/prd.md'
 
 # Data Files
-projectTypesCSV: '{workflow_path}/project-types.csv'
+projectTypesCSV: '../data/project-types.csv'
 
 # Task References
 advancedElicitationTask: '{project-root}/_bmad/core/workflows/advanced-elicitation/workflow.xml'
@@ -40,23 +35,8 @@ partyModeWorkflow: '{project-root}/_bmad/core/workflows/party-mode/workflow.md'
 - 🎯 Show your analysis before taking any action
 - ⚠️ Present A/P/C menu after generating innovation content
 - 💾 ONLY save when user chooses C (Continue)
-- 📖 Update frontmatter `stepsCompleted: [1, 2, 3, 4, 5, 6]` before loading next step
+- 📖 Update output file frontmatter, adding this step name to the end of the list of stepsCompleted
 - 🚫 FORBIDDEN to load next step until C is selected
-
-## COLLABORATION MENUS (A/P/C):
-
-This step will generate content and present choices:
-
-- **A (Advanced Elicitation)**: Use discovery protocols to develop deeper innovation insights
-- **P (Party Mode)**: Bring creative perspectives to explore innovation opportunities
-- **C (Continue)**: Save the content to the document and proceed to next step
-
-## PROTOCOL INTEGRATION:
-
-- When 'A' selected: Execute {project-root}/_bmad/core/workflows/advanced-elicitation/workflow.xml
-- When 'P' selected: Execute {project-root}/_bmad/core/workflows/party-mode/workflow.md
-- PROTOCOLS always return to this step's A/P/C menu
-- User accepts/rejects protocol changes before proceeding
 
 ## CONTEXT BOUNDARIES:
 
@@ -84,7 +64,7 @@ Detect and explore innovation patterns in the product, focusing on what makes it
 
 Load innovation signals specific to this project type:
 
-- Load `{project-root}/_bmad/bmm/workflows/2-plan-workflows/prd/project-types.csv` completely
+- Load `{projectTypesCSV}` completely
 - Find the row where `project_type` matches detected type from step-02
 - Extract `innovation_signals` (semicolon-separated list)
 - Extract `web_search_triggers` for potential innovation research
@@ -113,27 +93,22 @@ Match user descriptions against innovation_signals for their project_type:
 ### 3. Initial Innovation Screening
 
 Ask targeted innovation discovery questions:
-"As we explore {{project_name}}, I'm listening for what makes it innovative.
-
-**Innovation Indicators:**
-
-- Are you challenging any existing assumptions about how things work?
-- Are you combining technologies or approaches in new ways?
-- Is there something about this that hasn't been done before?
-
-What aspects of {{project_name}} feel most innovative to you?"
+- Guide exploration of what makes the product innovative
+- Explore if they're challenging existing assumptions
+- Ask about novel combinations of technologies/approaches
+- Identify what hasn't been done before
+- Understand which aspects feel most innovative
 
 ### 4. Deep Innovation Exploration (If Detected)
 
 If innovation signals are found, explore deeply:
 
 #### Innovation Discovery Questions:
-
-- "What makes it unique compared to existing solutions?"
-- "What assumption are you challenging?"
-- "How do we validate it works?"
-- "What's the fallback if it doesn't?"
-- "Has anyone tried this before?"
+- What makes it unique compared to existing solutions?
+- What assumption are you challenging?
+- How do we validate it works?
+- What's the fallback if it doesn't?
+- Has anyone tried this before?
 
 #### Market Context Research:
 
@@ -169,54 +144,43 @@ When saving to document, append these Level 2 and Level 3 sections:
 [Innovation risks and fallbacks based on conversation]
 ```
 
-### 6. Present Content and Menu (Only if Innovation Detected)
+### 6. Present MENU OPTIONS (Only if Innovation Detected)
 
-Show the generated innovation content and present choices:
-"I've identified some innovative aspects of {{project_name}} that differentiate it from existing solutions.
+Present the innovation content for review, then display menu:
+- Show identified innovative aspects (using structure from section 5)
+- Highlight differentiation from existing solutions
+- Ask if they'd like to refine further, get other perspectives, or proceed
+- Present menu options naturally as part of conversation
 
-**Here's what I'll add to the document:**
+Display: "**Select:** [A] Advanced Elicitation [P] Party Mode [C] Continue to Project Type Analysis (Step 7 of 11)"
 
-[Show the complete markdown content from step 5]
+#### Menu Handling Logic:
+- IF A: Execute {advancedElicitationTask} with the current innovation content, process the enhanced innovation insights that come back, ask user "Accept these improvements to the innovation analysis? (y/n)", if yes update content with improvements then redisplay menu, if no keep original content then redisplay menu
+- IF P: Execute {partyModeWorkflow} with the current innovation content, process the collaborative innovation exploration and ideation, ask user "Accept these changes to the innovation analysis? (y/n)", if yes update content with improvements then redisplay menu, if no keep original content then redisplay menu
+- IF C: Append the final content to {outputFile}, update frontmatter by adding this step name to the end of the stepsCompleted array, then load, read entire file, then execute {nextStepFile}
+- IF Any other: help user respond, then redisplay menu
 
-**What would you like to do?**
-[A] Advanced Elicitation - Let's dive deeper into these innovation opportunities
-[P] Party Mode - Bring creative perspectives to explore innovation further
-[C] Continue - Save this and move to Project Type Analysis (Step 7 of 11)"
-
-### 7. Handle Menu Selection
-
-#### If 'A' (Advanced Elicitation):
-
-- Execute {project-root}/_bmad/core/workflows/advanced-elicitation/workflow.xml with the current innovation content
-- Process the enhanced innovation insights that come back
-- Ask user: "Accept these improvements to the innovation analysis? (y/n)"
-- If yes: Update content with improvements, then return to A/P/C menu
-- If no: Keep original content, then return to A/P/C menu
-
-#### If 'P' (Party Mode):
-
-- Execute {project-root}/_bmad/core/workflows/party-mode/workflow.md with the current innovation content
-- Process the collaborative innovation exploration and ideation
-- Ask user: "Accept these changes to the innovation analysis? (y/n)"
-- If yes: Update content with improvements, then return to A/P/C menu
-- If no: Keep original content, then return to A/P/C menu
-
-#### If 'C' (Continue):
-
-- Append the final content to `{outputFile}`
-- Update frontmatter: add this step name to the end of the steps completed array
-- Load `{project-root}/_bmad/bmm/workflows/2-plan-workflows/prd/steps/step-07-project-type.md`
+#### EXECUTION RULES:
+- ALWAYS halt and wait for user input after presenting menu
+- ONLY proceed to next step when user selects 'C'
+- After other menu items execution, return to this menu
 
 ## NO INNOVATION DETECTED:
 
 If no genuine innovation signals are found after exploration:
-"After exploring {{project_name}}, I don't see clear innovation signals that warrant a dedicated innovation section. This is perfectly fine - many successful products are excellent executions of existing concepts rather than breakthrough innovations.
+- Acknowledge that no clear innovation signals were found
+- Note this is fine - many successful products are excellent executions of existing concepts
+- Ask if they'd like to try finding innovative angles or proceed
 
-**Options:**
-[A] Force innovation exploration - Let's try to find innovative angles
-[C] Continue - Skip innovation section and move to Project Type Analysis (Step 7 of 11)"
+Display: "**Select:** [A] Advanced Elicitation - Let's try to find innovative angles [C] Continue - Skip innovation section and move to Project Type Analysis (Step 7 of 11)"
 
-If user selects 'A', proceed with content generation anyway. If 'C', skip this step and load `{project-root}/_bmad/bmm/workflows/2-plan-workflows/prd/steps/step-07-project-type.md`.
+### Menu Handling Logic:
+- IF A: Proceed with content generation anyway, then return to menu
+- IF C: Skip this step, then load, read entire file, then execute {nextStepFile}
+
+### EXECUTION RULES:
+- ALWAYS halt and wait for user input after presenting menu
+- ONLY proceed to next step when user selects 'C'
 
 ## APPEND TO DOCUMENT:
 
@@ -248,7 +212,7 @@ When user selects 'C', append the content directly to the document using the str
 
 ## SKIP CONDITIONS:
 
-Skip this step and load `{project-root}/_bmad/bmm/workflows/2-plan-workflows/prd/steps/step-07-project-type.md` if:
+Skip this step and load `{nextStepFile}` if:
 
 - No innovation signals detected in conversation
 - Product is incremental improvement rather than breakthrough
@@ -257,6 +221,6 @@ Skip this step and load `{project-root}/_bmad/bmm/workflows/2-plan-workflows/prd
 
 ## NEXT STEP:
 
-After user selects 'C' and content is saved to document (or step is skipped), load `{project-root}/_bmad/bmm/workflows/2-plan-workflows/prd/steps/step-07-project-type.md`.
+After user selects 'C' and content is saved to document (or step is skipped), load `{nextStepFile}`.
 
 Remember: Do NOT proceed to step-07 until user explicitly selects 'C' from the A/P/C menu (or confirms step skip)!
