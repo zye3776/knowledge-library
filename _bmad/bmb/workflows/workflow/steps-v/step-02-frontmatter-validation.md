@@ -2,9 +2,9 @@
 name: 'step-02-frontmatter-validation'
 description: 'Validate frontmatter compliance across all step files'
 
-nextStepFile: './step-03-menu-validation.md'
-targetWorkflowPath: '{bmb_creations_output_folder}/workflows/{new_workflow_name}'
-validationReportFile: '{targetWorkflowPath}/validation-report-{new_workflow_name}.md'
+nextStepFile: './step-02b-path-violations.md'
+targetWorkflowPath: '{workflow_folder_path}'
+validationReportFile: '{workflow_folder_path}/validation-report-{datetime}.md'
 frontmatterStandards: '../data/frontmatter-standards.md'
 ---
 
@@ -12,36 +12,37 @@ frontmatterStandards: '../data/frontmatter-standards.md'
 
 ## STEP GOAL:
 
-To validate that EVERY step file's frontmatter follows the frontmatter standards - correct variables, proper path formatting, no unused variables.
+To validate that EVERY step file's frontmatter follows the frontmatter standards - correct variables, proper relative paths, NO unused variables.
 
 ## MANDATORY EXECUTION RULES (READ FIRST):
 
 ### Universal Rules:
 
-- 🛑 DO NOT BE LAZY - LOAD AND REVIEW EVERY FILE
+- 🛑 DO NOT BE LAZY - VALIDATE EVERY FILE'S FRONTMATTER
 - 📖 CRITICAL: Read the complete step file before taking any action
 - 🔄 CRITICAL: When loading next step, ensure entire file is read
 - ✅ Validation does NOT stop for user input - auto-proceed through all validation steps
+- ⚙️ If any instruction references a subprocess, subagent, or tool you do not have access to, you MUST still achieve the outcome in your main context thread
 
 ### Step-Specific Rules:
 
-- 🎯 Load and validate EVERY step file's frontmatter
-- 🚫 DO NOT skip any files or checks
-- 💬 Append findings to report, then auto-load next step
-- 🚪 This is validation - systematic and thorough
+- 🎯 Validate EVERY step file's frontmatter using subprocess optimization - each file in its own subprocess
+- 🚫 DO NOT skip any files or checks - DO NOT BE LAZY
+- 💬 Subprocess must either update validation report directly OR return structured findings to parent for aggregation
+- 🚪 This is validation - systematic and thorough using per-file deep analysis (Pattern 2)
 
 ## EXECUTION PROTOCOLS:
 
-- 🎯 Load frontmatter standards first
-- 💾 Check EVERY file against standards
-- 📖 Append findings to validation report
+- 🎯 Load frontmatter standards first, then validate each file in its own subprocess for deep analysis
+- 💾 Subprocesses must either update validation report OR return findings for parent aggregation
+- 📖 Aggregate all findings into validation report before loading next step
 - 🚫 DO NOT halt for user input - validation runs to completion
 
 ## CONTEXT BOUNDARIES:
 
-- All step files in steps-c/ must be validated
+- All step files in the workflow must be validated
 - Load {frontmatterStandards} for validation criteria
-- Check for: unused variables, hardcoded paths, missing required fields
+- Check for: unused variables, non-relative paths, missing required fields, forbidden patterns
 
 ## MANDATORY SEQUENCE
 
@@ -49,74 +50,115 @@ To validate that EVERY step file's frontmatter follows the frontmatter standards
 
 ### 1. Load Frontmatter Standards
 
-Load {frontmatterStandards} to understand validation criteria:
+Load {frontmatterStandards} to understand validation criteria.
 
-**Golden Rules:**
+**Key Rules:**
 1. Only variables USED in the step may be in frontmatter
 2. All file references MUST use `{variable}` format
-3. Paths within workflow folder MUST be relative
+3. Paths within workflow folder MUST be relative - NO `workflow_path` allowed
 
-**Required Fields:**
-- `name` - must be present, kebab-case
-- `description` - must be present
+**Forbidden Patterns:**
+- `workflow_path: '...'` - use relative paths instead
+- `thisStepFile: '...'` - remove unless actually referenced in body
+- `workflowFile: '...'` - remove unless actually referenced in body
+- `./...` - use `./step-XX.md`
+- `{workflow_path}/templates/...` - use `../template.md`
 
-### 2. Check EVERY Step File
+### 2. Validate EVERY Step File - Systematic Algorithm with Subprocess Optimization
 
-**DO NOT BE LAZY - For EACH file in steps-c/:**
+**DO NOT BE LAZY - For EACH step file, launch a subprocess that:**
 
-1. Load the file
-2. Extract frontmatter
-3. Validate against each rule:
+1. Loads that file
+2. Loads {frontmatterStandards} to understand validation criteria
+3. Performs all frontmatter validation checks on that file (extract variables, check usage, validate paths)
+4. **EITHER** updates the validation report directly with its findings
+5. **OR** returns structured findings to parent for aggregation
 
-**Check 1: Required Fields**
-- ✅ `name` exists and is kebab-case
-- ✅ `description` exists
+**SUBPROCESS ANALYSIS PATTERN:**
 
-**Check 2: All Frontmatter Variables Are Used**
-- For each variable in frontmatter, check if it appears in step body
-- ❌ If not used: mark as violation
+For each file, the subprocess performs the following deep analysis:
 
-**Check 3: No Hardcoded Paths**
-- Check all file references use `{variable}` format
-- ❌ If absolute path found: mark as violation
+#### Step 2.1: Extract Frontmatter Variables
 
-**Check 4: Relative Paths Within Workflow**
-- Paths to same workflow should be relative (`../data/`)
-- ❌ If absolute path for same-folder: mark as violation
-
-**Check 5: External References Use Full Variable Paths**
-- `{project-root}` variables for external references
-- ✅ Correct: `advancedElicitationTask: '{project-root}/_bmad/core/...'`
-
-### 3. Document Findings
-
-Create report table:
-
-```markdown
-### Frontmatter Validation Results
-
-| File | Required Fields | Variables Used | Relative Paths | Status |
-|------|----------------|----------------|----------------|--------|
-| step-01-init.md | ✅ | ✅ | ✅ | ✅ PASS |
-| step-02-*.md | ✅ | ❌ Unused: partyModeWorkflow | ✅ | ❌ FAIL |
-| step-03-*.md | ❌ Missing description | ✅ | ❌ Hardcoded path | ❌ FAIL |
+```python
+# Algorithm to extract variables from frontmatter:
+1. Find content between first `---` and second `---`
+2. For each line, extract key before `:`
+3. Skip `name`, `description`, and comment lines starting with `#`
+4. Collect all variable names
 ```
 
-### 4. List Violations
-
-```markdown
-### Violations Found
-
-**step-02-[name].md:**
-- Unused variable in frontmatter: `partyModeWorkflow` (not used in step body)
-
-**step-03-[name].md:**
-- Missing required field: `description`
-- Hardcoded path: `someTemplate: '/absolute/path/template.md'` should use relative or variable
-
-**step-05-[name].md:**
-- All checks passed ✅
+Example frontmatter:
+```yaml
+---
+# File References
+nextStepFile: './step-02-vision.md'
+outputFile: '{planning_artifacts}/product-brief-{{project_name}}.md'
+workflow_path: '{project-root}/...'  # ❌ FORBIDDEN
+thisStepFile: './step-01-init.md'     # ❌ Likely unused
+---
 ```
+
+Variables extracted: `nextStepFile`, `outputFile`, `workflow_path`, `thisStepFile`
+
+#### Step 2.2: Check Each Variable Is Used
+
+```python
+# Algorithm to check variable usage:
+for each variable in extracted_variables:
+    search_body = "{variableName}"  # with curly braces
+    if search_body NOT found in step body (after frontmatter):
+        MARK_AS_UNUSED(variable)
+```
+
+**Example:**
+- Variable `nextStepFile`: Search body for `{nextStepFile}` → Found in line 166 ✅
+- Variable `thisStepFile`: Search body for `{thisStepFile}` → Not found ❌ VIOLATION
+
+#### Step 2.3: Check Path Formats
+
+For each variable containing a file path:
+
+```python
+# Algorithm to validate paths:
+if path contains "{workflow_path}":
+    MARK_AS_VIOLATION("workflow_path is forbidden - use relative paths")
+
+if path is to another step file:
+    if not path.startswith("./step-"):
+        MARK_AS_VIOLATION("Step-to-step paths must be ./filename.md")
+
+if path is to parent folder template:
+    if not path.startswith("../"):
+        MARK_AS_VIOLATION("Parent folder paths must be ../filename.md")
+
+if path contains "{project-root}" and is internal workflow reference:
+    MARK_AS_VIOLATION("Internal paths must be relative, not project-root")
+```
+
+**RETURN FORMAT:**
+
+Subprocess returns file name, frontmatter compliance status, unused variables found, path violations, and overall status (PASS/FAIL). Include specific variable names and violation details for documentation.
+
+Check ALL files systematically. Return findings for compilation and appendage to validation report.
+
+### 3. Aggregate Findings and Document Results
+
+Document frontmatter validation results in the validation report showing:
+- Which files were checked
+- Frontmatter compliance status for each file
+- Unused variables found in each file
+- Path violations detected
+- Overall pass/fail status for each file
+
+### 4. List All Violations
+
+Document all violations found in the validation report, including:
+- Specific files with violations
+- Unused variable names and why they're unused
+- Forbidden patterns detected with explanation
+- Path format violations with details
+- Files that passed all checks
 
 ### 5. Append to Report
 
@@ -137,17 +179,21 @@ Then immediately load, read entire file, then execute {nextStepFile}.
 
 ### ✅ SUCCESS:
 
-- EVERY step file's frontmatter validated
-- All violations documented
-- Findings appended to report
+- EVERY step file validated using subprocess optimization (Pattern 2: per-file deep analysis)
+- Each subprocess validates frontmatter, checks variable usage, validates paths
+- Structured findings returned to parent OR report updated directly by subprocesses
+- All violations documented with specific variable names
+- Findings aggregated into validation report
 - Report saved before proceeding
 - Next validation step loaded
 
 ### ❌ SYSTEM FAILURE:
 
-- Not checking every file
-- Skipping frontmatter checks
-- Not documenting violations
+- Not validating every file using subprocess optimization
+- Not systematically checking each variable for usage in subprocess
+- Missing forbidden pattern detection
+- Not documenting violations with specific details
+- Not returning structured findings OR updating report from subprocess
 - Not saving report before proceeding
 
-**Master Rule:** Validation is systematic and thorough. DO NOT BE LAZY. Check EVERY file's frontmatter. Auto-proceed through all validation steps.
+**Master Rule:** Validation is systematic and thorough using subprocess optimization. DO NOT BE LAZY. For EACH file, launch a subprocess that validates frontmatter, checks variable usage, validates paths, and returns findings. Auto-proceed through all validation steps.
