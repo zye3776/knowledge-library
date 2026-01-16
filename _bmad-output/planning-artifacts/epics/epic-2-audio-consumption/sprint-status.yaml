@@ -1,0 +1,14 @@
+# STATUS DEFINITIONS:
+# Epic:  backlog | in-progress | done
+# Story: backlog | draft | ready-for-dev | in-progress | review | done
+
+generated: 2026-01-16
+project: knowledge-library
+project_key: kl
+story_location: _bmad-output/planning-artifacts/epics/epic-2-audio-consumption/stories
+
+development_status:
+  epic-2: backlog
+  2-1-convert-text-to-audio: backlog
+  2-2-configure-voice-preferences: backlog
+  2-3-chunked-audio-long-content: backlog

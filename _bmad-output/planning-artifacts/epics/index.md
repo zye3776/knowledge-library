@@ -1,15 +1,17 @@
 ---
-stepsCompleted: [1]
+stepsCompleted: [1, 2, 3]
 inputDocuments:
   - '_bmad-output/planning-artifacts/prd.md'
   - '_bmad-output/planning-artifacts/architecture.md'
+generated: 2026-01-16
+project: knowledge-library
 ---
 
 # knowledge-library - Epic Breakdown
 
 ## Overview
 
-This document provides the complete epic and story breakdown for knowledge-library, decomposing the requirements from the PRD, UX Design if it exists, and Architecture requirements into implementable stories.
+This document provides the complete epic and story breakdown for knowledge-library, decomposing the requirements from the PRD and Architecture into implementable stories.
 
 ## Requirements Inventory
 
@@ -51,7 +53,7 @@ This document provides the complete epic and story breakdown for knowledge-libra
 - FR23: System can guide user through extraction workflow via interactive prompts
 - FR24: System can display processing status and completion notifications
 
-### NonFunctional Requirements
+### Non-Functional Requirements
 
 **Reliability:**
 - NFR1: System provides clear error messages when extraction fails (network, no subtitles, invalid URL)
@@ -86,7 +88,7 @@ This document provides the complete epic and story breakdown for knowledge-libra
 **From Architecture - Workflow Architecture:**
 - 4 main workflows: extract, rephrase, consume, orchestrator
 - Tri-modal support: Create/Edit/Validate modes for each workflow
-- Orchestrator manages full Extract → Rephrase → Consume pipeline
+- Orchestrator manages full Extract -> Rephrase -> Consume pipeline
 - Step files follow naming: `step-{NN}-{action}.md`
 - Tri-modal folders: `steps-c/`, `steps-e/`, `steps-v/`
 
@@ -105,35 +107,69 @@ This document provides the complete epic and story breakdown for knowledge-libra
 - TTS generation: OpenAI API via existing tts-openai skill
 - Authentication: OPENAI_API_KEY environment variable required
 
-### FR Coverage Map
-
-{{requirements_coverage_map}}
+---
 
 ## Epic List
 
-{{epics_list}}
+### Epic 1: YouTube Content Extraction
+Users can extract transcripts from YouTube videos and save them to their knowledge library.
+**FRs covered:** FR1, FR2, FR3, FR4, FR14, FR15, FR17, FR23, FR24
 
-<!-- Repeat for each epic in epics_list (N = 1, 2, 3...) -->
+### Epic 2: Audio Consumption
+Users can convert extracted content to audio (TTS) for listening on walks, commutes, etc.
+**FRs covered:** FR10, FR11, FR12, FR13
 
-## Epic {{N}}: {{epic_title_N}}
+### Epic 3: Content Refinement
+Users can clean transcripts by removing sponsors, ads, and unexplained visual references while preserving technical content.
+**FRs covered:** FR5, FR6, FR7, FR8, FR9
 
-{{epic_goal_N}}
+### Epic 4: Pipeline Orchestration
+Users can run the complete Extract -> Rephrase -> Consume pipeline in a single session with validation checkpoints.
+**FRs covered:** FR16
 
-<!-- Repeat for each story (M = 1, 2, 3...) within epic N -->
+### Epic 5: Module Foundation & Configuration
+Users can install the knowledge-library as a distributable BMAD module with full configuration options.
+**FRs covered:** FR18, FR19, FR20, FR21, FR22
 
-### Story {{N}}.{{M}}: {{story_title_N_M}}
+---
 
-As a {{user_type}},
-I want {{capability}},
-So that {{value_benefit}}.
+## FR Coverage Map
 
-**Acceptance Criteria:**
+| FR | Epic | Description |
+|----|------|-------------|
+| FR1 | Epic 1 | YouTube URL input |
+| FR2 | Epic 1 | yt-dlp extraction |
+| FR3 | Epic 1 | Subtitle detection |
+| FR4 | Epic 1 | Metadata preservation |
+| FR5 | Epic 3 | Sponsor removal |
+| FR6 | Epic 3 | Visual reference removal |
+| FR7 | Epic 3 | Ad removal |
+| FR8 | Epic 3 | Terminology preservation |
+| FR9 | Epic 3 | Review capability |
+| FR10 | Epic 2 | TTS conversion |
+| FR11 | Epic 2 | Voice preferences |
+| FR12 | Epic 2 | MP3 output |
+| FR13 | Epic 2 | External playback |
+| FR14 | Epic 1 | Markdown storage |
+| FR15 | Epic 1 | Folder organization |
+| FR16 | Epic 4 | Content retrieval |
+| FR17 | Epic 1 | Metadata storage |
+| FR18 | Epic 5 | Config file reading |
+| FR19 | Epic 5 | Output directories |
+| FR20 | Epic 5 | Processing rules config |
+| FR21 | Epic 5 | Project initialization |
+| FR22 | Epic 5 | Simple command initiation |
+| FR23 | Epic 1 | Interactive prompts |
+| FR24 | Epic 1 | Status notifications |
 
-<!-- for each AC on this story -->
+---
 
-**Given** {{precondition}}
-**When** {{action}}
-**Then** {{expected_outcome}}
-**And** {{additional_criteria}}
+## Epic Folders
 
-<!-- End story repeat -->
+| Epic | Folder | Status |
+|------|--------|--------|
+| Epic 1 | [epic-1-youtube-content-extraction](./epic-1-youtube-content-extraction/) | backlog |
+| Epic 2 | [epic-2-audio-consumption](./epic-2-audio-consumption/) | backlog |
+| Epic 3 | [epic-3-content-refinement](./epic-3-content-refinement/) | backlog |
+| Epic 4 | [epic-4-pipeline-orchestration](./epic-4-pipeline-orchestration/) | backlog |
+| Epic 5 | [epic-5-module-foundation](./epic-5-module-foundation/) | backlog |

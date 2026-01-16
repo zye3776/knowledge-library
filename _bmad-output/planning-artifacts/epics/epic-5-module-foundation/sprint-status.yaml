@@ -1,0 +1,15 @@
+# STATUS DEFINITIONS:
+# Epic:  backlog | in-progress | done
+# Story: backlog | draft | ready-for-dev | in-progress | review | done
+
+generated: 2026-01-16
+project: knowledge-library
+project_key: kl
+story_location: _bmad-output/planning-artifacts/epics/epic-5-module-foundation/stories
+
+development_status:
+  epic-5: backlog
+  5-1-initialize-project-config: backlog
+  5-2-configure-output-directories: backlog
+  5-3-configure-processing-rules: backlog
+  5-4-simple-command-invocation: backlog

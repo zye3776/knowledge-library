@@ -1,0 +1,14 @@
+# STATUS DEFINITIONS:
+# Epic:  backlog | in-progress | done
+# Story: backlog | draft | ready-for-dev | in-progress | review | done
+
+generated: 2026-01-16
+project: knowledge-library
+project_key: kl
+story_location: _bmad-output/planning-artifacts/epics/epic-4-pipeline-orchestration/stories
+
+development_status:
+  epic-4: backlog
+  4-1-run-full-pipeline: backlog
+  4-2-access-content-library: backlog
+  4-3-re-run-pipeline-stage: backlog
