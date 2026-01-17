@@ -17,6 +17,18 @@ import type {
   ChangeType,
 } from "./types";
 
+/**
+ * Helper for intentionally setting invalid values in validation tests.
+ * This is explicit about bypassing type safety for testing purposes.
+ */
+function setInvalidValue<T>(obj: T, key: string, value: unknown): void {
+  (obj as Record<string, unknown>)[key] = value;
+}
+
+function deleteField<T>(obj: T, key: string): void {
+  delete (obj as Record<string, unknown>)[key];
+}
+
 // ============================================================================
 // Test Fixtures
 // ============================================================================
@@ -548,7 +560,7 @@ describe("Input Schema Validation", () => {
 
   it("should reject invalid discussion_depth option", () => {
     const input = createMockSkillInput();
-    input.options = { discussion_depth: "invalid" as any };
+    input.options = { discussion_depth: "invalid" as SkillInput["options"]["discussion_depth"] };
     const result = validateInput(input);
     expect(result.valid).toBe(false);
     expect(result.errors.some(e => e.includes("discussion_depth"))).toBe(true);
@@ -588,7 +600,7 @@ describe("Output Schema Validation", () => {
 
   it("should reject success output without result", () => {
     const output = createMockSuccessOutput();
-    (output as any).result = null;
+    setInvalidValue(output, "result", null);
     const result = validateOutput(output);
     expect(result.valid).toBe(false);
     expect(result.errors.some(e => e.includes("result is required"))).toBe(true);
@@ -596,7 +608,7 @@ describe("Output Schema Validation", () => {
 
   it("should reject error output with non-null result", () => {
     const output = createMockErrorOutput();
-    (output as any).result = {};
+    setInvalidValue(output, "result", {});
     const result = validateOutput(output);
     expect(result.valid).toBe(false);
     expect(result.errors.some(e => e.includes("result must be null"))).toBe(true);
@@ -604,7 +616,7 @@ describe("Output Schema Validation", () => {
 
   it("should reject invalid status values", () => {
     const output = createMockSuccessOutput();
-    (output.result as any).status = "invalid_status";
+    setInvalidValue(output.result, "status", "invalid_status");
     const result = validateOutput(output);
     expect(result.valid).toBe(false);
   });
@@ -619,7 +631,7 @@ describe("Output Schema Validation", () => {
 
   it("should reject invalid agent votes", () => {
     const output = createMockSuccessOutput();
-    (output.result.agent_consensus as any).architect = "maybe";
+    setInvalidValue(output.result.agent_consensus, "architect", "maybe");
     const result = validateOutput(output);
     expect(result.valid).toBe(false);
   });
@@ -633,7 +645,7 @@ describe("Output Schema Validation", () => {
 
   it("should require metadata fields", () => {
     const output = createMockSuccessOutput();
-    delete (output as any).metadata;
+    deleteField(output, "metadata");
     const result = validateOutput(output);
     expect(result.valid).toBe(false);
     expect(result.errors.some(e => e.includes("metadata is required"))).toBe(true);

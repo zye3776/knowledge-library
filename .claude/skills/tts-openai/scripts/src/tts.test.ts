@@ -10,6 +10,12 @@ import {
   getApiKey,
   requireApiKey,
 } from "./tts";
+import type OpenAI from "openai";
+
+/**
+ * Mock OpenAI client type for testing - matches the subset of OpenAI client used by tts functions
+ */
+type MockOpenAIClient = Pick<OpenAI, "audio">;
 
 describe("createClient", () => {
   test("creates OpenAI client with API key", () => {
@@ -78,7 +84,7 @@ describe("generateSpeech", () => {
           create: mockCreate,
         },
       },
-    } as any;
+    } as MockOpenAIClient;
 
     const buffer = await generateSpeech(mockClient, "Hello world", "nova", "tts-1");
 
@@ -102,7 +108,7 @@ describe("generateSpeech", () => {
           ),
         },
       },
-    } as any;
+    } as MockOpenAIClient;
 
     const buffer = await generateSpeech(mockClient, "Test", "echo", "tts-1");
     expect(buffer.length).toBe(4);
@@ -137,7 +143,7 @@ describe("generateSpeechToFile", () => {
           ),
         },
       },
-    } as any;
+    } as MockOpenAIClient;
 
     const outputPath = join(testDir, "output.mp3");
     await generateSpeechToFile(mockClient, "Test", "nova", "tts-1", outputPath);
@@ -176,7 +182,7 @@ describe("generateParagraphsAudio", () => {
           ),
         },
       },
-    } as any;
+    } as MockOpenAIClient;
 
     await generateParagraphsAudio(
       mockClient,
@@ -205,7 +211,7 @@ describe("generateParagraphsAudio", () => {
           ),
         },
       },
-    } as any;
+    } as MockOpenAIClient;
 
     await generateParagraphsAudio(
       mockClient,
@@ -233,7 +239,7 @@ describe("generateParagraphsAudio", () => {
           create: mockCreate,
         },
       },
-    } as any;
+    } as MockOpenAIClient;
 
     // Pre-create first file
     const paragraphsDir = join(testDir, "paragraphs");
@@ -263,7 +269,7 @@ describe("generateParagraphsAudio", () => {
           ),
         },
       },
-    } as any;
+    } as MockOpenAIClient;
 
     const progressCalls: Array<[number, number]> = [];
     const onProgress = (current: number, total: number) => {
@@ -298,7 +304,7 @@ describe("generateParagraphsAudio", () => {
           create: mockCreate,
         },
       },
-    } as any;
+    } as MockOpenAIClient;
 
     let stopAfter = 1;
     const shouldStop = () => {
@@ -333,7 +339,7 @@ describe("generateParagraphsAudio", () => {
           create: mockCreate,
         },
       },
-    } as any;
+    } as MockOpenAIClient;
 
     await generateParagraphsAudio(
       mockClient,

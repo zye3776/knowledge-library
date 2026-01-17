@@ -43,14 +43,6 @@ export default tseslint.config(
     },
   },
 
-  // Test files - relaxed
-  {
-    files: ['**/*.test.ts', '**/*.spec.ts'],
-    rules: {
-      '@typescript-eslint/no-explicit-any': 'warn',
-    },
-  },
-
   // Prettier compatibility
   eslintConfigPrettier,
 );
