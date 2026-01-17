@@ -1,6 +1,6 @@
 ---
 paths:
-  - "**/*.md"
+  - ".claude/**/*.md"
 ---
 
 # Hybrid XML + Markdown Formatting Standards

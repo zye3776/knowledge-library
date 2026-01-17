@@ -1,6 +1,8 @@
 ---
 paths:
-  - "**/*.md"
+  - ".claude/**/*.md"
+  - "docs/**/*.md"
+  - "_bmad-out/**/*.md"
 ---
 
 # Markdown @imports System
