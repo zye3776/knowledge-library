@@ -6,187 +6,165 @@ paths:
 # Hybrid XML + Markdown Formatting Standards
 
 <critical_rules>
-When creating or editing Skills, Commands, or Agents, you MUST follow these hybrid formatting standards:
+When creating or editing Skills, Commands, or Agents, follow these hybrid formatting standards:
 
-## XML Tags Are REQUIRED For:
-- Critical rules: Wrap in `<critical_rules>` tags
-- Behavioral constraints: Wrap in `<constraints>` tags
-- User/variable data: Wrap in `<user_input>` tags
-- Step-by-step instructions: Wrap in `<instructions>` tags
-- Output format specifications: Wrap in `<output_format>` tags
-- Workflow pause points: Wrap in `<checkpoint>` tags
-- End-of-file reminders: Wrap in `<system_reminder>` tags
+## XML Tag Philosophy
+- **Invent semantic tags** that describe your content's purpose
+- Tags should be self-documenting: `<documents>`, `<task>`, `<phase>` are clearer than generic containers
+- Use attributes for metadata: `<doc name="Architecture" path="...">`
+- The tag vocabulary is UNLIMITED - create tags that make sense for your content
+
+## Indentation for Nested XML
+Always indent nested XML with 2 spaces per level for readability:
+```xml
+<documents>
+  <section name="planning">
+    <doc name="Architecture" path="_bmad-output/planning-artifacts/architecture.md">
+      Technical decisions and system design
+    </doc>
+  </section>
+</documents>
+```
 
 ## Markdown Is REQUIRED For:
 - Section headers (use `#`, `##`, `###`)
 - Code examples (use fenced code blocks)
-- Simple lists and options
+- Simple flat lists
 - Human-readable documentation
-- File structure diagrams
 
 ## NEVER Do These:
 - Mix user data with instructions without XML boundaries
-- Use XML for simple lists (use Markdown instead)
+- Use XML for simple flat lists (use Markdown instead)
 - Embed XML tags mid-sentence in prose
-- Create deeply nested XML structures
-- Wrap everything in XML (over-tagging)
+- Skip indentation on nested structures
 </critical_rules>
 
-## Required File Structure
+## File Structure Templates
 
-### SKILL.md Files
+For complete templates with examples, see:
+- Skills: `.claude/rules/claude-framework/dev-skills.md`
+- Commands: `.claude/rules/claude-framework/dev-commands.md`
+- Agents: `.claude/rules/claude-framework/dev-agents.md`
 
-```markdown
----
-name: [skill-name]
-description: [Clear description with trigger keywords - max 200 chars]
-allowed-tools: [Tool1, Tool2]
----
-
-# Skill Title
-
-## Purpose
-[Brief explanation]
+## Creating Semantic Tags
 
 <instructions>
-1. Step one
-2. Step two
+  <principle name="self-documenting">
+    Tag names should describe their content's purpose, not generic structure.
+    BAD: `<data>`, `<info>`, `<content>`
+    GOOD: `<documents>`, `<workflow>`, `<validation_rules>`
+  </principle>
+
+  <principle name="attributes-vs-content">
+    Use attributes for identifiers and metadata:
+    ```xml
+    <doc name="Architecture" path="_bmad-output/planning-artifacts/architecture.md">
+    <task type="story-implementation">
+    <phase name="validation" order="3">
+    ```
+    Use content for descriptions and instructions:
+    ```xml
+    <doc name="Architecture" path="...">
+      Technical decisions, tech stack, system design
+    </doc>
+    ```
+  </principle>
+
+  <principle name="hierarchical-grouping">
+    Group related items under semantic containers:
+    ```xml
+    <documents>
+      <section name="planning">
+        <doc>...</doc>
+        <doc>...</doc>
+      </section>
+    </documents>
+    ```
+  </principle>
 </instructions>
 
-<constraints>
-- Constraint 1
-- Constraint 2
-</constraints>
-
-## Examples
-
-<examples>
-<example name="good">
-[Good example]
-</example>
-</examples>
-
-<output_format>
-[Expected output structure if parsing needed]
-</output_format>
-
-<system_reminder>
-[Key points Claude must not forget]
-</system_reminder>
-```
-
-### Command Files
-
-```markdown
----
-description: [What command does]
-allowed-tools: [Tools]
----
-
-# Command: $ARGUMENTS
-
-<user_input>$ARGUMENTS</user_input>
-
-<instructions>
-## Phase 1: [Name]
-- Steps here
-
-<checkpoint>
-Pause and confirm before proceeding.
-</checkpoint>
-
-## Phase 2: [Name]
-- More steps
-</instructions>
-
-<constraints>
-- What NOT to do
-</constraints>
-```
-
-### Agent Files
-
-```markdown
----
-name: [agent-name]
-description: [When to invoke]
-allowed-tools: [Tools]
-model: [model-id]
----
-
-# Agent Role
-
-<persona>
-- Expertise area
-- Communication style
-</persona>
-
-<constraints>
-- Behavioral limits
-</constraints>
-
-<output_format>
-<agent_result>
-  <task>[What was requested]</task>
-  <findings>[Results]</findings>
-</agent_result>
-</output_format>
-```
-
-## XML Tag Quick Reference
+## Common Tags (Extend as Needed)
 
 | Tag | Use When |
 |-----|----------|
 | `<critical_rules>` | Rules that MUST be followed |
 | `<constraints>` | Behavioral limitations |
 | `<instructions>` | Step-by-step procedures |
-| `<user_input>` | Variable/user-provided content |
-| `<context>` | Background information |
-| `<examples>` | Container for example blocks |
-| `<example>` | Single example with name attribute |
-| `<output_format>` | Define expected response structure |
-| `<checkpoint>` | Pause points in workflows |
 | `<system_reminder>` | End-of-file memory reinforcement |
+| `<documents>` | Document index or file references |
+| `<section>` | Grouping within a container |
+| `<doc>` | Single document reference with path |
+| `<task>` | Task-specific instructions |
+| `<phase>` | Workflow phase definition |
+| `<workflow>` | Multi-step process container |
+| `<examples>` | Container for example blocks |
+| `<output_format>` | Define expected response structure |
 | `<persona>` | Agent character definition |
+
+**Create new tags freely** - the above are suggestions, not limits.
 
 ## Anti-Patterns to AVOID
 
 <constraints>
-### Over-Tagging (BAD)
-```xml
-<list><item>Thing 1</item></list>
-```
-Use Markdown instead:
-```markdown
-- Thing 1
-```
+  <anti_pattern name="over-tagging">
+    BAD - Using XML for simple lists:
+    ```xml
+    <list><item>Thing 1</item></list>
+    ```
+    GOOD - Use Markdown for flat lists:
+    ```markdown
+    - Thing 1
+    ```
+  </anti_pattern>
 
-### XML in Prose (BAD)
-```
-Please <action>do this</action> now.
-```
-Separate instead:
-```markdown
-Do this now.
-<constraints>Only in src/ directory</constraints>
-```
+  <anti_pattern name="xml-in-prose">
+    BAD - Embedding tags mid-sentence:
+    ```
+    Please <action>do this</action> now.
+    ```
+    GOOD - Separate structure from prose:
+    ```markdown
+    Do this now.
+    <constraints>Only in src/ directory</constraints>
+    ```
+  </anti_pattern>
 
-### Missing Boundaries (BAD)
-```
-Analyze: const x = 1 and improve it.
-```
-Add boundaries:
-```markdown
-Analyze and improve:
-<code_context>const x = 1</code_context>
-```
+  <anti_pattern name="missing-indentation">
+    BAD - Flat nested XML:
+    ```xml
+    <documents><section><doc>...</doc></section></documents>
+    ```
+    GOOD - Indent nested structures:
+    ```xml
+    <documents>
+      <section>
+        <doc>...</doc>
+      </section>
+    </documents>
+    ```
+  </anti_pattern>
+
+  <anti_pattern name="generic-tags">
+    BAD - Non-descriptive tag names:
+    ```xml
+    <data><item>Architecture doc</item></data>
+    ```
+    GOOD - Semantic tag names:
+    ```xml
+    <documents>
+      <doc name="Architecture" path="...">Technical decisions</doc>
+    </documents>
+    ```
+  </anti_pattern>
 </constraints>
 
 <system_reminder>
 When creating Skills, Commands, or Agents:
 1. Start with YAML frontmatter (name, description, allowed-tools)
-2. Use Markdown headers for structure
-3. Add XML tags for critical rules, constraints, and data boundaries
-4. Include `<system_reminder>` at the end for important points
-5. Test that critical rules are actually followed
+2. Use Markdown headers for document structure
+3. **Invent semantic XML tags** that describe your content (`<documents>`, `<workflow>`, `<phase>`)
+4. **Always indent nested XML** with 2 spaces per level
+5. Use attributes for metadata: `<doc name="..." path="...">`
+6. Include `<system_reminder>` at the end for key points
+7. Reserve Markdown for headers, code blocks, and simple flat lists
 </system_reminder>

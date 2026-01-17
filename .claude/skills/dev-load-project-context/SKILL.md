@@ -5,75 +5,118 @@ description: Load project context documents (architecture, PRD, coding standards
 
 # Project Document Index
 
-Use this index to find relevant context documents for planning, development, and documentation tasks.
+<critical_rules>
+- ALWAYS read architecture.md before implementing any story
+- ALWAYS read the specific story file for acceptance criteria
+- ALWAYS read KISS principles before writing code
+- NEVER skip reading referenced documents - they contain essential context
+</critical_rules>
 
-## Core Planning Documents
+<documents>
+  <section name="core-planning">
+    <doc name="Architecture" path="_bmad-output/planning-artifacts/architecture.md">
+      Technical decisions, tech stack, constraints, system design
+    </doc>
+    <doc name="PRD" path="_bmad-output/planning-artifacts/prd.md">
+      Product requirements, user goals, success metrics
+    </doc>
+    <doc name="Epics Index" path="_bmad-output/planning-artifacts/epics/index.md">
+      Overview of all epics and their status
+    </doc>
+  </section>
 
-| Document | Path | Purpose |
-|----------|------|---------|
-| **Architecture** | `_bmad-output/planning-artifacts/architecture.md` | Technical decisions, tech stack, constraints, system design |
-| **PRD** | `_bmad-output/planning-artifacts/prd.md` | Product requirements, user goals, success metrics |
-| **Epics Index** | `_bmad-output/planning-artifacts/epics/index.md` | Overview of all epics and their status |
+  <section name="epic-story-documents">
+    <doc name="Epic Overview" path="_bmad-output/planning-artifacts/epics/{epic-name}/overview.md">
+      Epic goal, scope, story list
+    </doc>
+    <doc name="Stories Index" path="_bmad-output/planning-artifacts/epics/{epic-name}/stories/index.md">
+      List of stories in epic
+    </doc>
+    <doc name="Story File" path="_bmad-output/planning-artifacts/epics/{epic-name}/stories/{story-id}-*.md">
+      Acceptance criteria, tasks, dependencies
+    </doc>
+    <doc name="Sprint Status" path="_bmad-output/planning-artifacts/epics/{epic-name}/sprint-status.yaml">
+      Current sprint progress tracking
+    </doc>
+  </section>
 
-## Epic & Story Documents
+  <section name="development-standards">
+    <doc name="KISS Principles" path="docs/guides-agents/KISS-principle-agent-guide.md">
+      Simplicity guidelines, complexity thresholds, anti-patterns
+    </doc>
+    <doc name="Agent Dev Guide" path="docs/guides-agents/index.md">
+      Guidelines for AI agent development
+    </doc>
+  </section>
 
-| Document | Path Pattern | Purpose |
-|----------|--------------|---------|
-| **Epic Overview** | `_bmad-output/planning-artifacts/epics/{epic-name}/overview.md` | Epic goal, scope, story list |
-| **Stories Index** | `_bmad-output/planning-artifacts/epics/{epic-name}/stories/index.md` | List of stories in epic |
-| **Story File** | `_bmad-output/planning-artifacts/epics/{epic-name}/stories/{story-id}-*.md` | Acceptance criteria, tasks, dependencies |
-| **Sprint Status** | `_bmad-output/planning-artifacts/epics/{epic-name}/sprint-status.yaml` | Current sprint progress tracking |
+  <section name="claude-code-configuration">
+    <doc name="Project CLAUDE.md" path="CLAUDE.md">
+      Project overview, key patterns, constraints
+    </doc>
+    <doc name="Skill Standards" path=".claude/rules/claude-framework/dev-skills.md">
+      How to create skills
+    </doc>
+    <doc name="Command Standards" path=".claude/rules/claude-framework/dev-commands.md">
+      How to create commands
+    </doc>
+    <doc name="Agent Standards" path=".claude/rules/claude-framework/dev-agents.md">
+      How to create agents
+    </doc>
+    <doc name="XML+Markdown" path=".claude/rules/markdown/xml.md">
+      Hybrid formatting standards
+    </doc>
+  </section>
 
-## Development Standards
-
-| Document | Path | Purpose |
-|----------|------|---------|
-| **KISS Principles** | `docs/guides-agents/KISS-principle-agent-guide.md` | Simplicity guidelines, complexity thresholds, anti-patterns |
-| **Agent Dev Guide** | `docs/guides-agents/index.md` | Guidelines for AI agent development |
-
-## Claude Code Configuration
-
-| Document | Path | Purpose |
-|----------|------|---------|
-| **Project CLAUDE.md** | `CLAUDE.md` | Project overview, key patterns, constraints |
-| **Skill Standards** | `.claude/rules/claude-framework/dev-skills.md` | How to create skills |
-| **Command Standards** | `.claude/rules/claude-framework/dev-commands.md` | How to create commands |
-| **Agent Standards** | `.claude/rules/claude-framework/dev-agents.md` | How to create agents |
-| **XML+Markdown** | `.claude/rules/markdown/xml.md` | Hybrid formatting standards |
-
-## Planning Standards
-
-| Document | Path | Purpose |
-|----------|------|---------|
-| **Epic Standards** | `.claude/rules/planning/epic-standards.md` | Epic structure and requirements |
-| **Story Standards** | `.claude/rules/planning/story-standards.md` | Story structure and requirements |
-| **Epic Templates** | `.claude/rules/planning/epic-templates.md` | Templates for creating epics |
-| **Story Templates** | `.claude/rules/planning/story-templates.md` | Templates for creating stories |
+  <section name="planning-standards">
+    <doc name="Epic Standards" path=".claude/rules/planning/epic-standards.md">
+      Epic structure and requirements
+    </doc>
+    <doc name="Story Standards" path=".claude/rules/planning/story-standards.md">
+      Story structure and requirements
+    </doc>
+    <doc name="Epic Templates" path=".claude/rules/planning/epic-templates.md">
+      Templates for creating epics
+    </doc>
+    <doc name="Story Templates" path=".claude/rules/planning/story-templates.md">
+      Templates for creating stories
+    </doc>
+  </section>
+</documents>
 
 ---
 
 ## Usage by Task Type
 
-### For Story Implementation
-Read these documents:
-1. `_bmad-output/planning-artifacts/architecture.md` - Technical context
-2. `_bmad-output/planning-artifacts/epics/{epic}/stories/{story}.md` - Story details
-3. `docs/guides-agents/KISS-principle-agent-guide.md` - Development principles
+<instructions>
+  <task type="story-implementation">
+    Read these documents in order:
+    1. `_bmad-output/planning-artifacts/architecture.md` - Technical context
+    2. `_bmad-output/planning-artifacts/epics/{epic}/stories/{story}.md` - Story details
+    3. `docs/guides-agents/KISS-principle-agent-guide.md` - Development principles
+  </task>
 
-### For Planning New Features
-Read these documents:
-1. `_bmad-output/planning-artifacts/prd.md` - Product requirements
-2. `_bmad-output/planning-artifacts/architecture.md` - Technical constraints
-3. `.claude/rules/planning/story-standards.md` - Story format
+  <task type="planning-new-features">
+    Read these documents in order:
+    1. `_bmad-output/planning-artifacts/prd.md` - Product requirements
+    2. `_bmad-output/planning-artifacts/architecture.md` - Technical constraints
+    3. `.claude/rules/planning/story-standards.md` - Story format
+  </task>
 
-### For Creating Skills/Commands/Agents
-Read these documents:
-1. `.claude/rules/claude-framework/dev-skills.md` (or dev-commands.md, dev-agents.md)
-2. `.claude/rules/markdown/xml.md` - Formatting standards
-3. `CLAUDE.md` - Project conventions
+  <task type="creating-skills-commands-agents">
+    Read these documents in order:
+    1. `.claude/rules/claude-framework/dev-skills.md` (or dev-commands.md, dev-agents.md)
+    2. `.claude/rules/markdown/xml.md` - Formatting standards
+    3. `CLAUDE.md` - Project conventions
+  </task>
 
-### For Documentation Updates
-Read these documents:
-1. `CLAUDE.md` - What to document
-2. `.claude/rules/markdown/imports.md` - Import syntax
-3. Relevant planning docs for context
+  <task type="documentation-updates">
+    Read these documents in order:
+    1. `CLAUDE.md` - What to document
+    2. `.claude/rules/markdown/imports.md` - Import syntax
+    3. Relevant planning docs for context
+  </task>
+</instructions>
+
+<system_reminder>
+This is a document index, not executable code. Read the documents listed above based on your task type. Architecture and story files are mandatory for implementation work.
+</system_reminder>
