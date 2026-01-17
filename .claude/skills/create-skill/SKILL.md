@@ -8,6 +8,10 @@ description: Use when creating or editing skills in this project. Loads project-
 Reference skill for creating Claude Code skills following project standards.
 
 <critical_rules>
+## MUST Pair with superpowers:writing-skills
+
+**Before proceeding, invoke `superpowers:writing-skills` using the Skill tool.** This skill provides the foundational workflow for skill creation. The project-specific rules below then override conflicting guidance.
+
 ## Project Rules Override External Guidelines
 
 When creating skills in this project, the rules in `.claude/rules/claude-framework/dev-skills.md` are **authoritative** and override any conflicting guidance from:
@@ -35,6 +39,7 @@ See @.claude/rules/claude-framework/dev-skills.md
 </constraints>
 
 <system_reminder>
-Always load @.claude/rules/claude-framework/dev-skills.md before creating skills.
-Project rules override external guidelines. TypeScript + Bun only.
+1. FIRST invoke superpowers:writing-skills via Skill tool
+2. THEN load @.claude/rules/claude-framework/dev-skills.md
+3. Project rules override external guidelines. TypeScript + Bun only.
 </system_reminder>
