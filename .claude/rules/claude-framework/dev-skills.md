@@ -63,6 +63,15 @@ All new skill scripts should be written in TypeScript and built with Bun for:
 - Zero-dependency standalone executables
 - Native TypeScript execution without transpilation step
 
+### Scripts Must Compile to Standalone Binary
+All skill scripts MUST be compiled to standalone executables using:
+```bash
+bun build ./cli.ts --compile --outfile scripts/{script-name}
+```
+- The `package.json` must include a `build` script that compiles the binary
+- Never ship a skill without building the standalone executable
+- The compiled binary should be placed in the `scripts/` folder
+
 ### Scripts Must Use TDD (Test-Driven Development)
 - Write tests before or alongside implementation
 - Tests must be included for all script functionality
@@ -272,6 +281,7 @@ Benefits:
 - Ship scripts without tests (all tests must pass)
 - Skip TDD workflow (write tests first or alongside code)
 - Build before tests pass (`bun test` then `bun run build`)
+- Skip compiling standalone binary (`bun build --compile` is required)
 </constraints>
 
 ## Example: Complete Skill
