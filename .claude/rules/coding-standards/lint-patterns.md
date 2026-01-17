@@ -1,7 +1,12 @@
+---
+paths:
+  - "**/*.{ts,tsx}"
+---
+
 # Lint Patterns to Avoid
 
 <critical_rules>
-When fixing lint errors not covered in this document, ADD the new pattern here with an example before or after fixing. Keep this document current as the canonical reference for lint issues in this project.
+When fixing lint errors not covered in this document, ADD the new pattern here with an example before or after fixing. REFACTOR after adding to keep this document current as the canonical reference for lint issues in this project.
 </critical_rules>
 
 Common ESLint violations to prevent when writing TypeScript code.
@@ -84,6 +89,48 @@ const pattern = /^##+ .*goal[\s\S]*?(?=^#|\Z)/im;
 
 // Correct - use $ for end of string
 const pattern = /^##+ .*goal[\s\S]*?(?=^#|$)/im;
+```
+
+## No Explicit `any` - Use Typed Mocks
+
+When mocking external libraries, define a mock type instead of using `as any`.
+
+```typescript
+// Wrong - loses all type safety
+const mockClient = {
+  audio: { speech: { create: mockFn } },
+} as any;
+
+// Correct - define mock type matching what you use
+import type OpenAI from "openai";
+type MockOpenAIClient = Pick<OpenAI, "audio">;
+
+const mockClient = {
+  audio: { speech: { create: mockFn } },
+} as MockOpenAIClient;
+```
+
+## Type-Safe Validation Testing
+
+When testing validation by setting intentionally invalid values, use helper functions instead of `as any`.
+
+```typescript
+// Wrong - scattered `as any` casts
+(output as any).result = null;
+delete (output as any).metadata;
+
+// Correct - explicit helpers for invalid test values
+function setInvalidValue<T>(obj: T, key: string, value: unknown): void {
+  (obj as Record<string, unknown>)[key] = value;
+}
+
+function deleteField<T>(obj: T, key: string): void {
+  delete (obj as Record<string, unknown>)[key];
+}
+
+// Usage is clear about intent
+setInvalidValue(output, "result", null);
+deleteField(output, "metadata");
 ```
 
 ## Before Committing
