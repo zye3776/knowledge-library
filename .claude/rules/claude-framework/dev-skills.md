@@ -16,6 +16,26 @@ When creating or editing SKILL.md files, follow these standards:
 
 ## SKILL.md Must Be Under 500 Lines
 Use separate files for detailed content (reference.md, examples.md, scripts/)
+
+## First Decision: Static vs Script-Powered
+
+Before creating any skill, determine if it needs executable scripts:
+
+### Use Static Skills When:
+- Providing document indexes or navigation
+- Defining prompt templates or workflow guides
+- Instructing Claude what to read/do (Claude handles execution)
+- Creating reference lookups or configuration guides
+- The skill's job is to guide, not execute
+
+### Use Script-Powered Skills When:
+- Calling external APIs (TTS, web services, etc.)
+- Processing binary files or complex data transforms
+- Requiring state management or persistence
+- Needing deterministic CLI behavior
+- Tasks Claude's built-in tools cannot handle
+
+**Default to static.** Only add scripts when Claude cannot accomplish the task with its built-in tools (Read, Write, Edit, Grep, Glob, WebFetch, Bash).
 </critical_rules>
 
 ## Frontmatter Fields
@@ -35,76 +55,56 @@ Use separate files for detailed content (reference.md, examples.md, scripts/)
 
 ## File Organization
 
+### Static Skill Structure
+
 ```
 my-skill/
-├── SKILL.md              # Overview, navigation (< 500 lines)
-├── reference.md          # Detailed API docs, specifications
-├── examples.md           # Usage examples
-└── scripts/
-    └── helper.py         # Executed without loading into context
+├── SKILL.md              # Complete instructions (< 500 lines)
+└── references/           # Optional: large docs loaded on-demand
+    └── detailed-guide.md
 ```
 
-Reference supporting files in SKILL.md:
-```markdown
-## Additional resources
-- For complete API details, see [reference.md](reference.md)
-- For usage examples, see [examples.md](examples.md)
+### Script-Powered Skill Structure
 
-## Utility scripts
-Run extraction: `python scripts/helper.py input.txt`
+```
+my-skill/
+├── SKILL.md              # Overview + script usage (< 500 lines)
+├── package.json          # Bun project config
+├── scripts/
+│   ├── main.ts           # TypeScript source
+│   └── main.test.ts      # Tests (required)
+└── references/           # Optional: large docs
+    └── api-docs.md
 ```
 
-## Script Development Standards
+## Static Skills
+
+Static skills contain only instructions - Claude executes them using built-in tools.
+
+For XML formatting within SKILL.md files (semantic tags, indentation), see `.claude/rules/markdown/xml.md`.
+
+## Script-Powered Skills
+
+Use scripts only when Claude's built-in tools cannot accomplish the task.
 
 <critical_rules>
 ### Scripts Must Use TypeScript + Bun
-All new skill scripts should be written in TypeScript and built with Bun for:
 - Type safety and better IDE support
 - Zero-dependency standalone executables
-- Native TypeScript execution without transpilation step
+- Native TypeScript execution
 
 ### Scripts Must Compile to Standalone Binary
-All skill scripts MUST be compiled to standalone executables using:
 ```bash
 bun build ./cli.ts --compile --outfile scripts/{script-name}
 ```
-- The `package.json` must include a `build` script that compiles the binary
-- Never ship a skill without building the standalone executable
-- The compiled binary should be placed in the `scripts/` folder
+- `package.json` must include a `build` script
+- Never ship without building the standalone executable
 
-### Scripts Must Use TDD (Test-Driven Development)
+### Scripts Must Use TDD
 - Write tests before or alongside implementation
-- Tests must be included for all script functionality
-- All tests must pass before the skill is considered complete
+- All tests must pass before skill is complete
 - Use `bun test` for running tests
 </critical_rules>
-
-### Project Structure for Scripts
-
-```
-my-skill/
-├── SKILL.md
-├── package.json            # Bun project config
-├── scripts/
-│   ├── my-script.ts        # TypeScript source
-│   └── my-script.test.ts   # Tests for the script
-├── references/             # Large reference docs (loaded on-demand)
-│   ├── api-docs.md
-│   └── specifications.md
-├── data/                   # Static data files
-│   ├── config.json
-│   └── templates/
-└── node_modules/           # Dependencies (gitignored)
-```
-
-### Folder Conventions
-
-| Folder | Purpose | When to Use |
-|--------|---------|-------------|
-| `scripts/` | Executable TypeScript code | CLI tools, automation |
-| `references/` | Documentation loaded on-demand | Large API docs, specs, guides |
-| `data/` | Static data files | Config, templates, lookup tables |
-| `assets/` | Output files (images, fonts) | Templates, icons, boilerplate |
 
 ### package.json Template
 
@@ -215,15 +215,6 @@ bun run build
 | Testing | Write tests for all exported functions |
 | Test location | Place `*.test.ts` files alongside source in `scripts/` |
 
-### When to Use Scripts vs Inline Code
-
-| Use Scripts | Use Inline Instructions |
-|-------------|------------------------|
-| Repeated deterministic tasks | One-time operations |
-| Complex CLI with many options | Simple file operations |
-| External API integrations | Basic text processing |
-| State management (resume, etc.) | Claude can handle directly |
-
 ## Progressive Disclosure
 
 Claude loads skills in stages to preserve context tokens:
@@ -271,53 +262,36 @@ Benefits:
 | Location | `.claude/skills/` | `.claude/commands/` | `.claude/agents/` |
 
 <constraints>
-## Do NOT:
-- Exceed 500 lines in SKILL.md (use reference files instead)
-- Use vague descriptions (include specific trigger keywords)
+## Do NOT (All Skills):
+- Exceed 500 lines in SKILL.md (use reference files)
+- Use vague descriptions (include trigger keywords)
 - Omit required fields (name, description)
-- Put all content inline (use progressive disclosure)
-- Store large reference content inline (use `references/` folder)
-- Embed static data in code (use `data/` folder)
-- Ship scripts without tests (all tests must pass)
-- Skip TDD workflow (write tests first or alongside code)
-- Build before tests pass (`bun test` then `bun run build`)
-- Skip compiling standalone binary (`bun build --compile` is required)
+- Add scripts when static instructions suffice
+
+## Do NOT (Script-Powered Skills Only):
+- Ship scripts without tests
+- Skip TDD workflow
+- Build before tests pass
+- Skip compiling standalone binary
 </constraints>
 
-## Example: Complete Skill
+## Examples
 
-```yaml
----
-name: code-analyzer
-description: Analyzes code quality, complexity, and patterns. Use when reviewing code, auditing a codebase, or checking code health.
-allowed-tools: Read, Grep, Glob
----
+### Static Skill
 
-# Code Analyzer
+See `.claude/skills/dev-load-project-context/SKILL.md` - document index that guides Claude to read relevant files.
 
-## Instructions
+### Script-Powered Skill
 
-1. Identify target files using Glob patterns
-2. Read each file and analyze:
-   - Code complexity (cyclomatic complexity)
-   - Function length and nesting depth
-   - Code duplication patterns
-   - Naming conventions
+See `.claude/skills/tts-openai/SKILL.md` - calls external OpenAI API for text-to-speech conversion.
 
-3. Report findings organized by severity
+## Related Rules
 
-## Output Format
-
-### Critical (must fix)
-- [Issue] at `file:line`
-- Fix: [suggestion]
-
-### Warnings (should fix)
-...
-
-### Suggestions (consider)
-...
-```
+| Rule | When to Use |
+|------|-------------|
+| `.claude/rules/markdown/xml.md` | Writing SKILL.md content with semantic XML tags and proper indentation |
+| `.claude/rules/markdown/maintenance.md` | After creating or editing any skill markdown files |
+| `.claude/rules/markdown/imports.md` | When referencing external files from SKILL.md using @imports |
 
 ## Additional Resources
 
