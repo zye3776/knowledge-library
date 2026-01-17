@@ -1,8 +1,8 @@
-import { describe, expect, test, beforeEach, afterEach, mock } from "bun:test";
+import { describe, expect, test, beforeEach, afterEach } from "bun:test";
 import { mkdir, rm } from "fs/promises";
 import { join } from "path";
 import { tmpdir } from "os";
-import { loadPlaybackState, savePlaybackState } from "./state";
+import { savePlaybackState } from "./state";
 import { stopPlayback, getPlaybackStatus } from "./playback";
 
 describe("stopPlayback", () => {

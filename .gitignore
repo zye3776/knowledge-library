@@ -78,6 +78,15 @@ out/
 .cache/
 .parcel-cache/
 
+# Bun compiled executables
+*.bun-build
+
+# ESLint
+.eslintcache
+
+# Root bun lockfile
+bun.lockb
+
 # Package manager locks (optional - uncomment if you don't want to track)
 # package-lock.json
 # yarn.lock
@@ -89,3 +98,6 @@ temp/
 *.tmp
 *.temp
 *.bak
+
+# runtime files
+libraries/

@@ -1,0 +1,20 @@
+{
+  "name": "knowledge-library",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "lint": "eslint '.claude/skills/**/scripts/**/*.ts'",
+    "lint:fix": "eslint --fix '.claude/skills/**/scripts/**/*.ts'",
+    "format": "prettier --write '.claude/skills/**/scripts/**/*.ts'",
+    "format:check": "prettier --check '.claude/skills/**/scripts/**/*.ts'"
+  },
+  "devDependencies": {
+    "eslint": "^9.18.0",
+    "@eslint/js": "^9.18.0",
+    "typescript-eslint": "^8.21.0",
+    "eslint-config-prettier": "^10.0.1",
+    "prettier": "^3.4.2",
+    "globals": "^15.14.0"
+  }
+}

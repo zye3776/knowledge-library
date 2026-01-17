@@ -8,7 +8,7 @@
 import OpenAI from "openai";
 import { join } from "path";
 import { mkdir } from "fs/promises";
-import type { Voice, TTSOptions } from "./types";
+import type { Voice } from "./types";
 
 /**
  * Create an OpenAI client

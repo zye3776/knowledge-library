@@ -1,7 +1,6 @@
-import { describe, expect, test, mock, spyOn } from "bun:test";
+import { describe, expect, test } from "bun:test";
 import { AfplayPlayer, createPlayer, getPlayer } from "./player";
 import { FALLBACK_DURATION_SECONDS } from "./constants";
-import * as childProcess from "child_process";
 
 describe("AfplayPlayer", () => {
   describe("isAvailable", () => {

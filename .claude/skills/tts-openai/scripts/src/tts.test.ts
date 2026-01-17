@@ -187,7 +187,7 @@ describe("generateParagraphsAudio", () => {
     );
 
     const paragraphsDir = join(testDir, "paragraphs");
-    const file = Bun.file(paragraphsDir);
+    const _file = Bun.file(paragraphsDir);
     // Check directory exists by trying to list it
     const { readdir } = await import("fs/promises");
     const files = await readdir(paragraphsDir);
