@@ -10,6 +10,47 @@ const VOICES = ["alloy", "echo", "fable", "onyx", "nova", "shimmer"] as const;
 type Voice = (typeof VOICES)[number];
 const DEFAULT_VOICE: Voice = "nova";
 const DEFAULT_MODEL = "tts-1";
+const DEFAULT_SPEED = 1.0;
+
+// Text filters for better audio experience
+type TextFilter = (text: string) => string;
+
+const TEXT_FILTERS: Record<string, TextFilter> = {
+  // Remove markdown links but keep the link text: [text](url) -> text
+  "markdown-links": (text) => text.replace(/\[([^\]]+)\]\([^)]+\)/g, "$1"),
+
+  // Remove inline code backticks: `code` -> code
+  "inline-code": (text) => text.replace(/`([^`]+)`/g, "$1"),
+
+  // Remove bold/italic markers: **text** -> text, *text* -> text
+  "emphasis": (text) => text.replace(/\*\*([^*]+)\*\*/g, "$1").replace(/\*([^*]+)\*/g, "$1"),
+
+  // Remove markdown headers: ## Header -> Header
+  "headers": (text) => text.replace(/^#{1,6}\s+/gm, ""),
+
+  // Remove horizontal rules
+  "hr": (text) => text.replace(/^[-*_]{3,}\s*$/gm, ""),
+
+  // Remove image syntax: ![alt](url) -> (reads nothing or alt text)
+  "images": (text) => text.replace(/!\[([^\]]*)\]\([^)]+\)/g, "$1"),
+
+  // Clean up multiple spaces/newlines
+  "whitespace": (text) => text.replace(/\n{3,}/g, "\n\n").replace(/[ \t]+/g, " "),
+};
+
+// Default filters for markdown content
+const DEFAULT_FILTERS = ["markdown-links", "inline-code", "emphasis", "headers", "hr", "images", "whitespace"];
+
+function applyFilters(text: string, filterNames: string[]): string {
+  let result = text;
+  for (const name of filterNames) {
+    const filter = TEXT_FILTERS[name];
+    if (filter) {
+      result = filter(result);
+    }
+  }
+  return result;
+}
 
 // Global flag for graceful shutdown
 let stopRequested = false;
@@ -127,7 +168,7 @@ async function generateParagraphAudio(
 }
 
 // Play paragraphs sequentially with progress bar
-async function playParagraphs(outputDir: string, startFrom: number = 0): Promise<number> {
+async function playParagraphs(outputDir: string, startFrom: number = 0, rate: number = 1.0): Promise<number> {
   const paragraphsDir = join(outputDir, "paragraphs");
 
   try {
@@ -140,9 +181,9 @@ async function playParagraphs(outputDir: string, startFrom: number = 0): Promise
       return startFrom;
     }
 
-    // Calculate durations
+    // Calculate durations (adjusted for playback rate)
     process.stderr.write("Calculating duration...\r");
-    const durations = audioFiles.map((f) => getAudioDuration(join(paragraphsDir, f)));
+    const durations = audioFiles.map((f) => getAudioDuration(join(paragraphsDir, f)) / rate);
 
     let current = startFrom;
 
@@ -174,7 +215,7 @@ async function playParagraphs(outputDir: string, startFrom: number = 0): Promise
       const audioFile = join(paragraphsDir, audioFiles[i]);
 
       try {
-        const child = spawn("afplay", [audioFile]);
+        const child = spawn("afplay", ["-r", String(rate), audioFile]);
         await new Promise<void>((resolve, reject) => {
           child.on("close", (code) => {
             if (code === 0) resolve();
@@ -218,6 +259,7 @@ async function chunkedSpeak(
   outputDir: string,
   voice: Voice,
   model: string,
+  rate: number,
   generateOnly: boolean = false
 ): Promise<void> {
   const apiKey = process.env.OPENAI_API_KEY;
@@ -271,11 +313,11 @@ async function chunkedSpeak(
   }
 
   // Play all paragraphs
-  await playParagraphs(outputDir, 0);
+  await playParagraphs(outputDir, 0, rate);
 }
 
 // Resume playback
-async function resumePlayback(outputDir: string): Promise<void> {
+async function resumePlayback(outputDir: string, rate: number = 1.0): Promise<void> {
   const state = await loadPlaybackState(outputDir);
 
   if (!state) {
@@ -285,10 +327,10 @@ async function resumePlayback(outputDir: string): Promise<void> {
 
   if (state.status === "completed") {
     console.error("✅ Playback already completed. Starting from beginning.");
-    await playParagraphs(outputDir, 0);
+    await playParagraphs(outputDir, 0, rate);
   } else {
     console.error(`▶️  Resuming from paragraph ${state.current_paragraph + 1}/${state.total_paragraphs}...`);
-    await playParagraphs(outputDir, state.current_paragraph);
+    await playParagraphs(outputDir, state.current_paragraph, rate);
   }
 }
 
@@ -317,7 +359,7 @@ async function showStatus(outputDir: string): Promise<void> {
 }
 
 // Simple TTS (single file mode)
-async function speak(text: string, voice: Voice, model: string, outputFile?: string): Promise<void> {
+async function speak(text: string, voice: Voice, model: string, rate: number, outputFile?: string): Promise<void> {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
     console.error("Error: OPENAI_API_KEY environment variable not set.");
@@ -342,7 +384,7 @@ async function speak(text: string, voice: Voice, model: string, outputFile?: str
     await Bun.write(tmpPath, buffer);
 
     try {
-      const child = spawn("afplay", [tmpPath]);
+      const child = spawn("afplay", ["-r", String(rate), tmpPath]);
       await new Promise<void>((resolve, reject) => {
         child.on("close", (code) => {
           if (code === 0) resolve();
@@ -381,6 +423,10 @@ program
   .option("-v, --voice <voice>", `Voice to use (default: ${DEFAULT_VOICE})`, DEFAULT_VOICE)
   .option("-o, --output <file>", "Save audio to file instead of playing")
   .option("--model <model>", `Model to use (default: ${DEFAULT_MODEL})`, DEFAULT_MODEL)
+  .option("-r, --rate <rate>", `Playback rate 0.25-4.0 (default: ${DEFAULT_SPEED})`, String(DEFAULT_SPEED))
+  .option("--filter <filters>", "Comma-separated list of filters to apply (default: all)")
+  .option("--no-filter", "Disable all text filters")
+  .option("--list-filters", "List available text filters")
   .option("--list-voices", "List available voices")
   .option("--chunked", "Enable paragraph-by-paragraph audio generation and playback")
   .option("-d, --dir <dir>", "Output directory for chunked audio files")
@@ -396,6 +442,9 @@ program
         voice: string;
         output?: string;
         model: string;
+        rate: string;
+        filter?: string | boolean;
+        listFilters?: boolean;
         listVoices?: boolean;
         chunked?: boolean;
         dir?: string;
@@ -407,6 +456,18 @@ program
     ) => {
       try {
         // Handle special commands first
+        if (options.listFilters) {
+          console.log("Available text filters:");
+          for (const [name, _] of Object.entries(TEXT_FILTERS)) {
+            const isDefault = DEFAULT_FILTERS.includes(name);
+            console.log(`  ${name}${isDefault ? " (default)" : ""}`);
+          }
+          console.log("\nUsage:");
+          console.log("  --filter markdown-links,inline-code  Apply specific filters");
+          console.log("  --no-filter                          Disable all filters");
+          return;
+        }
+
         if (options.listVoices) {
           console.log("Available voices:");
           VOICES.forEach((v) => {
@@ -435,7 +496,12 @@ program
             console.error("Error: --resume requires -d/--dir");
             process.exit(1);
           }
-          await resumePlayback(options.dir);
+          const rate = parseFloat(options.rate);
+          if (isNaN(rate) || rate < 0.25 || rate > 4.0) {
+            console.error(`Error: Invalid rate '${options.rate}'. Must be between 0.25 and 4.0`);
+            process.exit(1);
+          }
+          await resumePlayback(options.dir, rate);
           return;
         }
 
@@ -462,9 +528,34 @@ program
           return;
         }
 
+        // Determine which filters to apply
+        let filtersToApply: string[] = [];
+        if (options.filter === false) {
+          // --no-filter: disable all filters
+          filtersToApply = [];
+        } else if (typeof options.filter === "string") {
+          // --filter list: use specified filters
+          filtersToApply = options.filter.split(",").map((f) => f.trim());
+        } else {
+          // Default: apply all default filters
+          filtersToApply = DEFAULT_FILTERS;
+        }
+
+        // Apply text filters
+        if (filtersToApply.length > 0) {
+          text = applyFilters(text, filtersToApply);
+        }
+
         // Validate voice
         if (!VOICES.includes(options.voice as Voice)) {
           console.error(`Error: Invalid voice '${options.voice}'. Choose from: ${VOICES.join(", ")}`);
+          process.exit(1);
+        }
+
+        // Validate and parse playback rate
+        const rate = parseFloat(options.rate);
+        if (isNaN(rate) || rate < 0.25 || rate > 4.0) {
+          console.error(`Error: Invalid rate '${options.rate}'. Must be between 0.25 and 4.0`);
           process.exit(1);
         }
 
@@ -474,9 +565,9 @@ program
             console.error("Error: --chunked requires -d/--dir");
             process.exit(1);
           }
-          await chunkedSpeak(text, options.dir, options.voice as Voice, options.model, options.generateOnly);
+          await chunkedSpeak(text, options.dir, options.voice as Voice, options.model, rate, options.generateOnly);
         } else {
-          await speak(text, options.voice as Voice, options.model, options.output);
+          await speak(text, options.voice as Voice, options.model, rate, options.output);
         }
       } catch (error: unknown) {
         const message = error instanceof Error ? error.message : String(error);
