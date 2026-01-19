@@ -4,11 +4,11 @@
  * Pre-commit Index Generator
  *
  * Orchestrates the generation of CLAUDE.md index files during pre-commit.
- * Detects changed markdown files in watched folders and generates indexes
+ * Receives staged markdown files as input and generates indexes
  * only for affected directories.
  *
  * Usage:
- *   bun scripts/pre-commit-index.ts
+ *   bun scripts/pre-commit-index.ts <file1.md> <file2.md> ...
  *
  * Environment:
  *   ANTHROPIC_API_KEY - Required for generating summaries (via generate-index.ts)
@@ -41,21 +41,6 @@ interface IndexPlan {
 // =============================================================================
 // Git Helpers
 // =============================================================================
-
-function getStagedMarkdownFiles(): string[] {
-  try {
-    const output = execSync("git diff --cached --name-only --diff-filter=ACMR", {
-      encoding: "utf-8",
-    });
-
-    return output
-      .split("\n")
-      .filter((file) => file.endsWith(".md"))
-      .filter((file) => !CONFIG.excludePatterns.some((p) => file.endsWith(p)));
-  } catch {
-    return [];
-  }
-}
 
 function stageFile(filePath: string): void {
   try {
@@ -216,8 +201,8 @@ function generateIndex(dir: string): boolean {
 // =============================================================================
 
 function main(): void {
-  // Get staged markdown files (excluding CLAUDE.md)
-  const stagedFiles = getStagedMarkdownFiles();
+  // Get staged files from command line arguments
+  const stagedFiles = process.argv.slice(2);
 
   if (stagedFiles.length === 0) {
     printSkipped();
