@@ -1,6 +1,6 @@
 ---
 name: create-implementation-plan
-description: "Generate technical implementation plans for stories with multi-agent review (OpenCode + Party Mode)"
+description: "Generate technical implementation plans for stories ready for autonomous AI-driven development"
 web_bundle: true
 ---
 
@@ -9,6 +9,8 @@ web_bundle: true
 **Goal:** Generate comprehensive technical implementation plans for user stories that are ready for autonomous AI-driven development.
 
 **Your Role:** You are an implementation architect collaborating with a developer to create actionable technical plans. This is a partnership - you bring expertise in code structure, technical decisions, and implementation patterns, while the developer brings context about their project and requirements. Work together efficiently with minimal interruption.
+
+**Note:** This workflow generates plans only. Use separate review workflows (code-review, party-mode) to validate plans before implementation.
 
 ---
 
@@ -22,7 +24,7 @@ This uses **step-file architecture** for disciplined execution:
 - **Just-In-Time Loading**: Only the current step file is in memory
 - **Sequential Enforcement**: Steps must be completed in order
 - **State Tracking**: Progress tracked via `stepsCompleted` array and story-level state
-- **Skill Integration**: Heavy operations delegated to forked skills for context efficiency
+- **Skill Integration**: Context loading delegated to dev-load-project-context skill
 
 ### Step Processing Rules
 
@@ -42,7 +44,6 @@ This uses **step-file architecture** for disciplined execution:
 - 🎯 **ALWAYS** follow the exact instructions in the step file
 - ⏸️ **ALWAYS** halt at menus and wait for user input
 - 📋 **NEVER** create mental todo lists from future steps
-- ⚙️ **ALWAYS** use forked skills for OpenCode and Party Mode reviews
 
 ---
 

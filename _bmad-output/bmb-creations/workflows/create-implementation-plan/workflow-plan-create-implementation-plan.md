@@ -1,11 +1,11 @@
 ---
-stepsCompleted: ['step-01-discovery', 'step-02-classification', 'step-03-requirements', 'step-04-tools', 'step-05-plan-review', 'step-06-design', 'step-07-foundation', 'step-08-build-step-01']
+stepsCompleted: ['step-01-discovery', 'step-02-classification', 'step-03-requirements', 'step-04-tools', 'step-05-plan-review', 'step-06-design', 'step-07-foundation', 'step-08-build-step-01', 'step-09-simplification']
 created: 2026-01-16
-status: BUILDING_STEPS
+status: COMPLETED
 approvedDate: 2026-01-16
+simplifiedDate: 2026-01-19
 workflowName: create-implementation-plan
 targetPath: '_bmad/bmm/workflows/4-implementation/create-implementation-plan/'
-currentBuildStep: 2
 ---
 
 # Workflow Creation Plan
@@ -13,7 +13,7 @@ currentBuildStep: 2
 ## Discovery Notes
 
 **User's Vision:**
-Create a v2 replacement for the existing `epic-autonomous-dev` skill. This workflow orchestrates autonomous story-level implementation planning with multi-agent review (Claude Code + OpenCode + BMM Party Mode). It bridges the gap between user-facing requirements (epics/stories) and AI-ready implementation plans.
+Create a v2 replacement for the existing `epic-autonomous-dev` skill. This workflow generates autonomous story-level implementation plans. It bridges the gap between user-facing requirements (epics/stories) and AI-ready implementation plans.
 
 **Who It's For:**
 - Developers initiating autonomous development cycles
@@ -26,10 +26,9 @@ Create a v2 replacement for the existing `epic-autonomous-dev` skill. This workf
 **Key Insights:**
 
 1. **Replaces v1 skill**: `epic-autonomous-dev` was the prototype; this workflow is the production-ready evolution
-2. **Multi-agent orchestration**: Generate → OpenCode Review → Party Mode Finalize
-3. **Portable skills**: All skills work with both Claude Code and OpenCode
-4. **Context loading is critical**: Step E loads architecture.md, prd.md, coding-standards, KISS principles via dedicated skill
-5. **Fully autonomous output**: Implementation plan requires zero human input during code execution
+2. **Generation-focused**: Generate plans only; reviews handled by separate workflows (code-review, party-mode)
+3. **Context loading is critical**: Loads architecture.md, prd.md, coding-standards, KISS principles via dedicated skill
+4. **Fully autonomous output**: Implementation plan requires zero human input during code execution
 
 **Workflow Steps (High-Level):**
 
@@ -38,13 +37,10 @@ Create a v2 replacement for the existing `epic-autonomous-dev` skill. This workf
 | a | Developer summons workflow |
 | b | Scan epics, read sprint-status.yaml for each |
 | c | User selects epic(s) OR specific story for auto-development |
-| d | Orchestrate story development (replaces epic-autonomous-dev logic) |
-| e | SKILL: Load project context into memory |
-| f | Load epic overview + stories index + story details |
-| g | SKILL: Generate implementation plan from template |
-| h | SKILL: OpenCode reviews → suggestions/issues |
-| i | BMM Party Mode review → final plan |
-| j | Save as `{story-name}.implement.md` |
+| d | SKILL: Load project context into memory |
+| e | Load epic overview + stories index + story details |
+| f | Generate implementation plan from template |
+| g | Save as `{story-name}.implement.md` |
 
 **Design Goals:**
 - Better performance (modular, focused steps)
@@ -90,11 +86,9 @@ _bmad/bmm/workflows/4-implementation/create-implementation-plan/
 │   ├── step-01b-continue.md # Resume from previous session
 │   ├── step-02-scan-epics.md
 │   ├── step-03-select-scope.md
-│   ├── step-04-load-context.md
-│   ├── step-05-generate-plan.md
-│   ├── step-06-opencode-review.md
-│   ├── step-07-party-mode-review.md
-│   └── step-08-save-plan.md
+│   ├── step-04-select-mode.md
+│   ├── step-05-process-stories.md  # Generate + save loop
+│   └── step-06-finalize.md
 ├── steps-e/                 # EDIT flow
 │   └── (edit steps TBD)
 └── steps-v/                 # VALIDATE flow
@@ -126,10 +120,8 @@ _bmad/bmm/workflows/4-implementation/create-implementation-plan/
   4. Processing Mode Selection
   5. Context Loading
   6. Plan Generation (loop/batch)
-  7. OpenCode Review (loop/batch)
-  8. Party Mode Review (loop/batch)
-  9. Save Plans
-- Estimated steps: 8-9 step files for create flow
+  7. Save Plans
+- Estimated steps: 6 step files for create flow
 
 **User Interaction:**
 - Style: Mostly Autonomous
@@ -185,7 +177,6 @@ _bmad/bmm/workflows/4-implementation/create-implementation-plan/
 - All template sections populated (no empty/placeholder content)
 - Decisions align with architecture.md, no contradictions
 - Implementation steps specific enough for AI dev workflow
-- OpenCode + Party Mode feedback addressed in final plan
 - Files saved at correct path alongside story files
 - AI dev workflow can execute without asking clarifying questions
 - No ambiguous instructions like "decide later" or "TBD"
@@ -200,11 +191,8 @@ _bmad/bmm/workflows/4-implementation/create-implementation-plan/
   | Scan Epics | Prescriptive |
   | Select Scope | Prescriptive |
   | Select Mode | Prescriptive |
-  | Load Context | Prescriptive |
-  | Generate Plan | Mixed |
-  | OpenCode Review | Intent-Based |
-  | Party Mode | Intent-Based |
-  | Save Plan | Prescriptive |
+  | Process Stories | Mixed (generation + save) |
+  | Finalize | Prescriptive |
 
 ---
 
@@ -214,7 +202,7 @@ _bmad/bmm/workflows/4-implementation/create-implementation-plan/
 
 | Tool | Include | Integration Point |
 |------|---------|-------------------|
-| Party Mode | Yes | Phase 8 - via forked skill (`context: fork`) |
+| Party Mode | No | Use separate party-mode workflow for reviews |
 | Advanced Elicitation | No | Doesn't fit autonomous design |
 | Brainstorming | No | Not needed for structured generation |
 
@@ -222,32 +210,25 @@ _bmad/bmm/workflows/4-implementation/create-implementation-plan/
 
 | Feature | Include | Use Case |
 |---------|---------|----------|
-| Web-Browsing/DeepWiki | Yes | Phase 6 - technical research during plan generation |
+| Web-Browsing/DeepWiki | Yes | Technical research during plan generation |
 | File I/O | Yes | Required - reading inputs, writing `.implement.md` |
-| Sub-Agents | No | Replaced by forked skills |
+| Sub-Agents | No | Not needed for simplified flow |
 | Sub-Processes | Optional | Future batch optimization consideration |
 
-**Skills Architecture (Key Design Decision):**
-
-Heavy operations run as **skills with `context: fork`** to isolate context:
+**Skills Architecture (Simplified):**
 
 ```
-Main Workflow Context (clean, efficient)
+Main Workflow Context
     │
-    ├── Phase 6: Generate Plan
-    │   └── Uses DeepWiki MCP for research (inline)
+    ├── Load Context (dev-load-project-context skill)
+    │   └── Loads architecture, prd, coding-standards
     │
-    ├── Phase 7: Invoke dev-opencode-review skill (context: fork)
-    │   └── Returns: suggestions, issues only
-    │
-    └── Phase 8: Invoke dev-party-mode-review skill (context: fork)
-        └── Returns: final implementation plan only
+    └── Generate + Save Plans
+        └── Uses DeepWiki MCP for research (inline)
 ```
 
-**Skills to Create:**
-1. `dev-opencode-review` - Wrapper skill to invoke OpenCode review with `context: fork`
-2. `dev-party-mode-review` - Wrapper skill to invoke Party Mode with `context: fork`
-3. `dev-load-project-context` - Skill to load all required docs into context
+**Skills Required:**
+1. `dev-load-project-context` - Skill to load all required docs into context
 
 **Memory & State:**
 
@@ -263,7 +244,10 @@ Main Workflow Context (clean, efficient)
 | Integration | Purpose |
 |-------------|---------|
 | DeepWiki MCP | Technical research for implementation decisions |
-| OpenCode | External AI agent for plan review (via skill wrapper) |
+
+**Post-Generation Review (Optional):**
+- Run `code-review` workflow to validate plans
+- Run `party-mode` workflow for multi-agent deliberation
 
 **Installation Requirements:**
 - None - all tools available or already configured
@@ -281,7 +265,7 @@ Main Workflow Context (clean, efficient)
 | 02 | `step-02-scan-epics.md` | Middle (Simple) | Scan epics, read sprint-status.yaml, display summary | C only |
 | 03 | `step-03-select-scope.md` | Branch | User selects epic(s) OR specific story | C only |
 | 04 | `step-04-select-mode.md` | Branch | User chooses Sequential OR Batch | C only |
-| 05 | `step-05-process-stories.md` | Middle (Loop/Batch) | Orchestrates generation, review, save loop | Progress updates |
+| 05 | `step-05-process-stories.md` | Middle (Loop/Batch) | Orchestrates generation + save loop | Progress updates |
 | 06 | `step-06-finalize.md` | Final | Report completion summary | None |
 
 ### Step 05: Core Processing Logic
@@ -289,21 +273,16 @@ Main Workflow Context (clean, efficient)
 **Sequential Mode:**
 ```
 FOR each story:
-  1. Load context (dev-load-project-context skill)
+  1. Load story details
   2. Generate plan (inline + DeepWiki research)
-  3. OpenCode review (dev-opencode-review skill, context: fork)
-  4. Party Mode review (dev-party-mode-review skill, context: fork)
-  5. Save {story}.implement.md
+  3. Save {story}.implement.md
   → Next story
 ```
 
 **Batch Mode:**
 ```
-1. Load all context once
-2. Generate ALL plans
-3. OpenCode reviews ALL plans
-4. Party Mode reviews ALL plans
-5. Save ALL plans
+1. Generate ALL plans
+2. Save ALL plans
 ```
 
 ### Data Files (data/)
@@ -349,7 +328,7 @@ Step 04 (Select Mode)
 
 Step 05 (Process)
   └─► Input: Selections, mode, context docs
-  └─► Skills: dev-load-project-context, dev-opencode-review, dev-party-mode-review
+  └─► Skills: dev-load-project-context
   └─► Output: {story}.implement.md files
 
 Step 06 (Finalize)
@@ -373,20 +352,17 @@ lastContinued: '2026-01-16'
 ---
 ```
 
-### Skills to Create
+### Skills Required
 
 | Skill | Purpose | Context | Returns |
 |-------|---------|---------|---------|
 | `dev-load-project-context` | Load arch, prd, coding-standards, epic docs | Inline | Loaded context |
-| `dev-opencode-review` | Invoke OpenCode for plan review | `context: fork` | Suggestions, issues |
-| `dev-party-mode-review` | Invoke Party Mode for final review | `context: fork` | Final implementation plan |
 
 ### Subprocess Optimization
 
 | Step | Pattern | Details |
 |------|---------|---------|
 | Step 02 (scan) | Pattern 1 (grep) | Single scan across sprint-status.yaml files |
-| Step 05 (reviews) | Pattern 2 (deep analysis) | Forked skill per story via `context: fork` |
 
 ### Error Handling
 
@@ -395,7 +371,7 @@ lastContinued: '2026-01-16'
 | Missing required docs | Fail fast - list missing files, exit |
 | No epics found | Error: "No epics found in planning-artifacts" |
 | Story already has .implement.md | Skip with notice (default) or overwrite |
-| Skill execution fails | Log error, mark story failed, continue to next |
+| Generation fails | Log error, mark story failed, continue to next |
 | All stories fail | Report failure summary, exit with error |
 
 ### File Structure (Final)
@@ -495,7 +471,7 @@ _bmad/bmm/workflows/4-implementation/create-implementation-plan/
 | 02 | `step-02-scan-epics.md` | Middle (Simple) | Scan epics, display status |
 | 03 | `step-03-select-scope.md` | Branch | User selects epic(s)/story |
 | 04 | `step-04-select-mode.md` | Branch | User selects Sequential/Batch |
-| 05 | `step-05-process-stories.md` | Middle (Loop) | Core generation + review loop |
+| 05 | `step-05-process-stories.md` | Middle (Loop) | Core generation + save loop |
 | 06 | `step-06-finalize.md` | Final | Report completion |
 
 **Workflow Structure Complete:**
@@ -517,7 +493,31 @@ create-implementation-plan/
 └── steps-v/                       (placeholder)
 ```
 
-**Skills Required (to be created separately):**
-- `dev-load-project-context` - Load architecture, prd, standards
-- `dev-opencode-review` - OpenCode review with context: fork
-- `dev-party-mode-review` - Party Mode review with context: fork
+**Skills Required:**
+- `dev-load-project-context` - Load architecture, prd, standards ✓ (completed)
+
+---
+
+## Simplification (2026-01-19)
+
+**Changes Made:**
+
+The workflow was simplified to focus on plan generation only. Review phases removed.
+
+| Removed | Reason |
+|---------|--------|
+| `dev-opencode-review` skill | User will run separate review workflows |
+| `dev-party-mode-review` skill | User will run separate party-mode workflow |
+| Steps 3c, 3d (sequential) | OpenCode + Party Mode review substeps |
+| Phases 2, 3 (batch) | OpenCode + Party Mode review phases |
+
+**New Flow:**
+- Sequential: Load Story → Generate Plan → Save → Update Progress
+- Batch: Generate ALL Plans → Save ALL Plans
+
+**Post-Generation Review (Optional):**
+- Run `code-review` workflow to validate plans
+- Run `party-mode` workflow for multi-agent deliberation
+
+**Rationale:**
+User prefers separation of concerns - generate plans in one workflow, review in separate workflows. This provides more flexibility and control over the review process.

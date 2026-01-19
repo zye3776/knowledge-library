@@ -1,23 +1,21 @@
 ---
 name: 'step-05-process-stories'
-description: 'Core processing loop - generate plans, OpenCode review, Party Mode review, save'
+description: 'Core processing loop - generate implementation plans and save'
 
 nextStepFile: './step-06-finalize.md'
 stateFile: '{output_folder}/implementation-plan-state.yaml'
 planTemplate: '../data/implementation-plan-template.md'
 epicsFolder: '{output_folder}/planning-artifacts/epics'
 
-# Skills to invoke (with context: fork)
+# Skills to invoke
 loadContextSkill: 'dev-load-project-context'
-opencodeReviewSkill: 'dev-opencode-review'
-partyModeReviewSkill: 'dev-party-mode-review'
 ---
 
 # Step 5: Process Stories
 
 ## STEP GOAL:
 
-Execute the core processing loop - generate implementation plans, run OpenCode review, run Party Mode review, and save completed plans for all selected stories.
+Execute the core processing loop - generate implementation plans and save completed plans for all selected stories.
 
 ## MANDATORY EXECUTION RULES (READ FIRST):
 
@@ -34,16 +32,13 @@ Execute the core processing loop - generate implementation plans, run OpenCode r
 
 - ✅ You are an implementation architect generating technical plans
 - ✅ This is autonomous processing - minimal user interruption
-- ✅ Use forked skills for heavy operations to preserve context
 - ✅ Report progress as stories complete
 
 ### Step-Specific Rules:
 
 - 🎯 Process ALL selected stories according to chosen mode
-- 🚫 FORBIDDEN to skip OpenCode or Party Mode reviews
 - 💬 Report progress after each story (sequential) or phase (batch)
-- 🎯 Use skills with `context: fork` for OpenCode and Party Mode
-- 🚫 DO NOT load full review context into main thread
+- 📝 Generate comprehensive plans using loaded context
 
 ## EXECUTION PROTOCOLS:
 
@@ -55,8 +50,8 @@ Execute the core processing loop - generate implementation plans, run OpenCode r
 ## CONTEXT BOUNDARIES:
 
 - Previous: User selected scope and mode
-- Focus: Autonomous generation and review
-- Skills: dev-load-project-context, dev-opencode-review, dev-party-mode-review
+- Focus: Autonomous plan generation
+- Skills: dev-load-project-context
 - Output: {story-name}.implement.md files
 
 ## MANDATORY SEQUENCE
@@ -85,60 +80,54 @@ processingStarted: true
 currentPhase: 'loading_context'
 ```
 
-### 2. Load Project Context
+### 2. Load Epic and Story Files
+
+**Load epic and story context FIRST:**
+
+```
+FOR EACH selected epic:
+  - Read {epicsFolder}/[epic]/overview.md
+  - Read {epicsFolder}/[epic]/stories/index.md (if exists)
+
+FOR EACH story in selectedStories:
+  - Read {epicsFolder}/[epic]/stories/[story].md
+  - Extract: title, description, acceptance criteria, dependencies, tasks
+```
+
+Display: "**Epic and story files loaded.** [N] stories ready for processing."
+
+### 3. Load Project Context via Skill
 
 **Invoke {loadContextSkill}:**
 
-Load all required context documents:
-- `_bmad-output/planning-artifacts/architecture.md`
-- `_bmad-output/planning-artifacts/prd.md`
-- `.claude/rules/coding-standards` (or similar)
-- Epic overview for selected epic(s)
-- KISS development principles
+The skill returns a document index. From the skill output, read these documents:
+- `_bmad-output/planning-artifacts/architecture.md` - Technical decisions
+- `_bmad-output/planning-artifacts/prd.md` - Product requirements
+- `docs/guides-agents/KISS-principle-agent-guide.md` - Simplicity guidelines
 
-Display: "**Context loaded.** Architecture, PRD, and coding standards ready."
+Display: "**Project context loaded.** Architecture, PRD, and KISS principles ready."
 
-### 3. Process Stories (Mode-Dependent)
+### 4. Process Stories (Mode-Dependent)
 
 **IF processingMode == 'sequential':**
 
 ```
 FOR EACH story in selectedStories (not in storiesCompleted):
 
-  3a. Load Story Details
-      - Read story file from {epicsFolder}/[epic]/stories/[story].md
-      - Extract: title, description, acceptance criteria, dependencies
-
-  3b. Generate Implementation Plan
+  4a. Generate Implementation Plan
       - Load {planTemplate}
       - Fill template sections based on:
-        * Story requirements
+        * Story requirements (already loaded in step 2)
         * Architecture decisions
         * PRD context
-        * Coding standards
+        * KISS principles
       - Use DeepWiki MCP for technical research if needed
-      - Save draft to memory (don't write file yet)
 
-  3c. OpenCode Review (forked context)
-      - Invoke {opencodeReviewSkill} with:
-        * Draft implementation plan
-        * Story context
-        * Architecture constraints
-      - Receive: suggestions, issues, improvements
-      - Store review results
-
-  3d. Party Mode Review (forked context)
-      - Invoke {partyModeReviewSkill} with:
-        * Draft implementation plan
-        * OpenCode suggestions/issues
-        * Full project context
-      - Receive: final reviewed implementation plan
-
-  3e. Save Implementation Plan
-      - Write final plan to: {epicsFolder}/[epic]/stories/[story].implement.md
+  4b. Save Implementation Plan
+      - Write plan to: {epicsFolder}/[epic]/stories/[story].implement.md
       - Update story's sprint-status entry (implementation_plan: exists)
 
-  3f. Update Progress
+  4c. Update Progress
       - Add story to storiesCompleted in {stateFile}
       - Display: "✓ [story-id]: [story-name] - Plan generated and saved"
 
@@ -150,33 +139,19 @@ FOR EACH story in selectedStories (not in storiesCompleted):
 ```
 Phase 1: Generate ALL Plans
   FOR EACH story in selectedStories:
-    - Load story details
-    - Generate draft implementation plan
+    - Generate implementation plan using loaded context
     - Store in memory/temp
   Display: "Phase 1 complete: [N] plans generated"
 
-Phase 2: OpenCode Review ALL
-  Invoke {opencodeReviewSkill} with ALL draft plans
-  Receive: suggestions and issues for each plan
-  Display: "Phase 2 complete: OpenCode review done"
-
-Phase 3: Party Mode Review ALL
-  Invoke {partyModeReviewSkill} with:
-    - All draft plans
-    - All OpenCode suggestions
-    - Full project context
-  Receive: all finalized plans
-  Display: "Phase 3 complete: Party Mode review done"
-
-Phase 4: Save ALL Plans
+Phase 2: Save ALL Plans
   FOR EACH story:
-    - Write final plan to {epicsFolder}/[epic]/stories/[story].implement.md
+    - Write plan to {epicsFolder}/[epic]/stories/[story].implement.md
     - Update sprint-status
     - Add to storiesCompleted
-  Display: "Phase 4 complete: [N] plans saved"
+  Display: "Phase 2 complete: [N] plans saved"
 ```
 
-### 4. Handle Errors
+### 5. Handle Errors
 
 **IF a story fails to process:**
 - Log error with story ID and reason
@@ -192,7 +167,7 @@ storiesFailed:
     phase: "generation"
 ```
 
-### 5. Update Final State
+### 6. Update Final State
 
 Update {stateFile}:
 ```yaml
@@ -204,7 +179,7 @@ storiesCompleted: ['1-1', '1-3', ...]
 storiesFailed: []  # or list of failures
 ```
 
-### 6. Display Completion Summary
+### 7. Display Completion Summary
 
 Display:
 ```
@@ -214,7 +189,6 @@ Display:
 |--------|-------|
 | Stories Processed | [N] |
 | Plans Generated | [M] |
-| Reviews Completed | [M] × 2 (OpenCode + Party Mode) |
 | Failed | [F] |
 
 **Generated Plans:**
@@ -225,9 +199,13 @@ Display:
 [IF any failures:]
 **Failed Stories (manual review needed):**
 - ✗ [story-id]: [error reason]
+
+**Next Steps:**
+- Run code-review workflow to validate plans
+- Run party-mode for multi-agent deliberation (optional)
 ```
 
-### 7. Proceed to Finalization
+### 8. Proceed to Finalization
 
 Display: "**Proceeding to finalization...**"
 
@@ -248,7 +226,7 @@ Display: "**Proceeding to finalization...**"
 ### ✅ SUCCESS:
 
 - All selected stories processed (or gracefully failed)
-- Each plan went through: Generate → OpenCode → Party Mode → Save
+- Each plan went through: Generate → Save
 - Plans saved to correct locations
 - State updated throughout
 - Clear progress reporting
@@ -256,10 +234,8 @@ Display: "**Proceeding to finalization...**"
 
 ### ❌ SYSTEM FAILURE:
 
-- Skipping review steps
-- Not using forked context for heavy reviews
 - Entire process crashes on single story failure
 - State not updated (can't resume on failure)
 - Plans saved to wrong locations
 
-**Master Rule:** Process autonomously, use forked skills for reviews, fail gracefully, update state continuously.
+**Master Rule:** Process autonomously, fail gracefully, update state continuously.
