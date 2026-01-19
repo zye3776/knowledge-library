@@ -33,23 +33,26 @@ fi
 
 echo "📚 Markdown changes detected in watched folders. Regenerating indexes..."
 
-# Find all unique parent directories that need reindexing
+# For each watched folder with changes, find ALL directories to index (recursive)
 DIRS_TO_INDEX=""
 
-for file in $STAGED_MD_FILES; do
-  for folder in $WATCHED_FOLDERS; do
-    if echo "$file" | grep -q "^$folder/"; then
-      # Get the immediate parent directory of the changed file
-      DIR=$(dirname "$file")
-      # Add to list if not already there
-      if ! echo "$DIRS_TO_INDEX" | grep -q "$DIR"; then
-        DIRS_TO_INDEX="$DIRS_TO_INDEX $DIR"
-      fi
+for folder in $NEEDS_REINDEX; do
+  if [ -d "$folder" ]; then
+    # Add the root watched folder itself
+    if ! echo "$DIRS_TO_INDEX" | grep -q " $folder "; then
+      DIRS_TO_INDEX="$DIRS_TO_INDEX $folder "
     fi
-  done
+    
+    # Add all subdirectories recursively (excluding hidden directories)
+    for subdir in $(find "$folder" -type d ! -name ".*" 2>/dev/null); do
+      if ! echo "$DIRS_TO_INDEX" | grep -q " $subdir "; then
+        DIRS_TO_INDEX="$DIRS_TO_INDEX $subdir "
+      fi
+    done
+  fi
 done
 
-# Run the index generator for each affected directory
+# Run the index generator for each directory
 for dir in $DIRS_TO_INDEX; do
   if [ -d "$dir" ]; then
     echo "   Indexing: $dir"
