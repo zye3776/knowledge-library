@@ -33,7 +33,8 @@ workflow_status:
         agent: "analyst"
         command: "/bmad:bmm:workflows:research"
       - id: "product-brief"
-        status: "skipped"
+        status: "_bmad-output/planning-artifacts/product-brief-knowledge-library-2026-01-19.md"
+        completed: "2026-01-19"
         agent: "analyst"
         command: "/bmad:bmm:workflows:create-product-brief"
 
