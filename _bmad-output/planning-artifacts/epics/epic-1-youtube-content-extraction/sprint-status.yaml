@@ -9,7 +9,7 @@ story_location: _bmad-output/planning-artifacts/epics/epic-1-youtube-content-ext
 
 development_status:
   epic-1: backlog
-  1-1-extract-youtube-transcript: ready-for-dev
+  1-1-extract-youtube-transcript: ready-for-dev  # implementation_plan: exists
   1-2-save-with-metadata: backlog
   1-3-interactive-extraction-workflow: backlog
   1-4-re-extract-existing-content: backlog
