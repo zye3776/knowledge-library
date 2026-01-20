@@ -27,7 +27,7 @@ import * as path from "path";
 // =============================================================================
 
 const CONFIG = {
-  model: "claude-sonnet-4-20250514",
+  model: "claude-3-5-haiku-latest",
   managedTag: "docs_index",
   outputFile: "CLAUDE.md",
   maxContentLength: 3000,

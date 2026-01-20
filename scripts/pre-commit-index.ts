@@ -23,7 +23,7 @@ import * as path from "path";
 // =============================================================================
 
 const CONFIG = {
-  watchedFolders: ["docs", ".claude/rules"],
+  watchedFolders: ["docs", ".claude/rules", "_bmad-output"],
   excludePatterns: ["CLAUDE.md"],
   indexScript: "scripts/generate-index.ts",
 } as const;
