@@ -5,7 +5,7 @@
 
   ## Documentation Index: .claude/rules
 
-  <folder_description>Documentation for project standards, guidelines, and frameworks organized by category.</folder_description>
+  <folder_description>Documentation for project rules, coding standards, planning, and framework guidelines.</folder_description>
 
   ### Files
 
@@ -18,10 +18,10 @@
   For detailed documentation in subfolders, read the CLAUDE.md file in each subfolder.
 
   <subfolders>
-    <subfolder path="coding-standards/" hint="Documentation defining code style, linting, testing, and TypeScript standards for development projects." />
-    <subfolder path="markdown/" hint="Documentation for XML handling, imports functionality, and system maintenance procedures in markdown format." />
-    <subfolder path="planning/" hint="Project plans, timelines, requirements, and strategic documents." />
-    <subfolder path="claude-framework/" hint="Documentation for Claude framework covering markdown practices, development plugins, skills, commands, and agents." />
-    <subfolder path="bmm/" hint="Documentation for customizing the BMad accelerator physics library through agent configuration." />
+    <subfolder path="coding-standards/" hint="Documentation outlining code style, linting, testing, and language-specific standards for development projects." />
+    <subfolder path="markdown/" hint="Documentation describing XML, import processes, and system maintenance procedures in Markdown format." />
+    <subfolder path="planning/" hint="Contains templates and standards for epics and user stories in project planning." />
+    <subfolder path="claude-framework/" hint="Documentation for Claude framework development including best practices, plugins, skills, commands, and agents." />
+    <subfolder path="bmm/" hint="Documentation for BMM's Bmad customisation agent configuration and usage." />
   </subfolders>
 </docs_index>

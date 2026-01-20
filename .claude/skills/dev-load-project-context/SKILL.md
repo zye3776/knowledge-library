@@ -6,7 +6,7 @@ description: Load project context documents (architecture, PRD, coding standards
 # Project Document Index
 
 <critical_rules>
-- ALWAYS read architecture.md before implementing any story
+- ALWAYS read architecture/index.md before implementing any story (follow links for relevant sections)
 - ALWAYS read the specific story file for acceptance criteria
 - ALWAYS read KISS principles before writing code
 - NEVER skip reading referenced documents - they contain essential context
@@ -14,8 +14,8 @@ description: Load project context documents (architecture, PRD, coding standards
 
 <documents>
   <section name="core-planning">
-    <doc name="Architecture" path="_bmad-output/planning-artifacts/architecture.md">
-      Technical decisions, tech stack, constraints, system design
+    <doc name="Architecture Index" path="_bmad-output/planning-artifacts/architecture/index.md">
+      Entry point for sharded architecture docs (tech decisions, constraints, system design)
     </doc>
     <doc name="PRD" path="_bmad-output/planning-artifacts/prd.md">
       Product requirements, user goals, success metrics
@@ -90,7 +90,7 @@ description: Load project context documents (architecture, PRD, coding standards
 <instructions>
   <task type="story-implementation">
     Read these documents in order:
-    1. `_bmad-output/planning-artifacts/architecture.md` - Technical context
+    1. `_bmad-output/planning-artifacts/architecture/index.md` - Architecture entry point (follow links for details)
     2. `_bmad-output/planning-artifacts/epics/{epic}/stories/{story}.md` - Story details
     3. `docs/guides-agents/KISS-principle-agent-guide.md` - Development principles
   </task>
@@ -98,7 +98,7 @@ description: Load project context documents (architecture, PRD, coding standards
   <task type="planning-new-features">
     Read these documents in order:
     1. `_bmad-output/planning-artifacts/prd.md` - Product requirements
-    2. `_bmad-output/planning-artifacts/architecture.md` - Technical constraints
+    2. `_bmad-output/planning-artifacts/architecture/index.md` - Technical constraints (sharded)
     3. `.claude/rules/planning/story-standards.md` - Story format
   </task>
 

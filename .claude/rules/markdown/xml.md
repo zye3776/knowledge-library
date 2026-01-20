@@ -19,7 +19,7 @@ Always indent nested XML with 2 spaces per level for readability:
 ```xml
 <documents>
   <section name="planning">
-    <doc name="Architecture" path="_bmad-output/planning-artifacts/architecture.md">
+    <doc name="Architecture" path="_bmad-output/planning-artifacts/architecture/index.md">
       Technical decisions and system design
     </doc>
   </section>
@@ -58,7 +58,7 @@ For complete templates with examples, see:
   <principle name="attributes-vs-content">
     Use attributes for identifiers and metadata:
     ```xml
-    <doc name="Architecture" path="_bmad-output/planning-artifacts/architecture.md">
+    <doc name="Architecture" path="_bmad-output/planning-artifacts/architecture/index.md">
     <task type="story-implementation">
     <phase name="validation" order="3">
     ```

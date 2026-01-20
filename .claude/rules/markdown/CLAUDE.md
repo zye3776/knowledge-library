@@ -5,14 +5,14 @@
 
   ## Documentation Index: .claude/rules/markdown
 
-  <folder_description>Documentation for XML handling, import processes, and system maintenance procedures in Markdown format.</folder_description>
+  <folder_description>Documentation describing XML, import processes, and system maintenance procedures in Markdown format.</folder_description>
 
   ### Files
 
   <docs>
-    <doc path="xml.md" description="Defines hybrid XML+Markdown formatting standards for Skills, Commands, and Agents - read when creating or editing framework components." />
-    <doc path="imports.md" description="Documents how to use `@path/to/file` syntax to reference other markdown files instead of duplicating content." />
-    <doc path="maintenance.md" description="Defines mandatory cleanup rules for markdown files: remove redundancy, resolve conflicts, refactor clarity, and trim bloat after any edits." />
+    <doc path="xml.md" description="Guidelines for using semantic XML tags alongside Markdown in documentation, focusing on creating clear, self-documenting structures for Skills, Commands, and Agents." />
+    <doc path="imports.md" description="Guidelines for using @imports in markdown to reference files, organize documentation, and maintain clean, modular content structure." />
+    <doc path="maintenance.md" description="Markdown file maintenance guidelines for detecting and eliminating content redundancy across documentation files." />
   </docs>
 
 </docs_index>

@@ -2,7 +2,7 @@
 stepsCompleted: [1, 2, 3]
 inputDocuments:
   - '_bmad-output/planning-artifacts/prd.md'
-  - '_bmad-output/planning-artifacts/architecture.md'
+  - '_bmad-output/planning-artifacts/architecture/index.md'
 generated: 2026-01-16
 project: knowledge-library
 ---

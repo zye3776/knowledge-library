@@ -5,19 +5,19 @@
 
   ## Documentation Index: _bmad-output/planning-artifacts/architecture
 
-  <folder_description>Documentation detailing project architecture, structural decisions, context analysis, and implementation guidelines.</folder_description>
+  <folder_description>Documentation on project architecture, structure, decisions, context analysis, and implementation guidelines.</folder_description>
 
   ### Files
 
   <docs>
-    <doc path="project-structure-boundaries.md" description="A comprehensive guide to the project's modular structure, workflow organization, and component mapping for a knowledge library system." />
-    <doc path="architecture-completion-summary.md" description="A comprehensive architecture completion summary detailing AI agent implementation decisions, requirements, and readiness for the BMAD Module project." />
-    <doc path="architecture-validation-results.md" description="A comprehensive validation document confirming architectural, requirements, and implementation readiness for a modular workflow system with multi-stage processing." />
-    <doc path="project-context-analysis.md" description="A markdown documenting a CLI tool's requirements for extracting, processing, and storing YouTube content with emphasis on simplicity and reliability." />
-    <doc path="index.md" description="A comprehensive architecture decision guide detailing project technical decisions, constraints, patterns, and implementation strategies for system design." />
-    <doc path="core-architectural-decisions.md" description="A comprehensive guide detailing architectural decisions for a flexible, modular content extraction and processing workflow with configurable services and stages." />
-    <doc path="starter-template-evaluation.md" description="A documentation for evaluating a hybrid BMAD workflow and Claude Code Skills architecture for knowledge extraction and processing." />
-    <doc path="implementation-patterns-consistency-rules.md" description="Documentation covers naming, structure, and format conventions for AI workflow and skill implementations, guiding consistent project organization." />
+    <doc path="project-structure-boundaries.md" description="A comprehensive guide to the project's directory structure, workflow components, and mapping of requirements to specific locations and skills." />
+    <doc path="architecture-completion-summary.md" description="A comprehensive architecture summary outlining AI agent implementation guidelines, decisions, and readiness for the BMAD Module project." />
+    <doc path="architecture-validation-results.md" description="A comprehensive validation document confirming architectural, requirements, and implementation readiness for a modular workflow system." />
+    <doc path="project-context-analysis.md" description="A comprehensive markdown document detailing functional and non-functional requirements for a YouTube transcript extraction and processing CLI tool." />
+    <doc path="index.md" description="A comprehensive architectural decision document guiding project design, technology selection, and implementation patterns for software development." />
+    <doc path="core-architectural-decisions.md" description="A comprehensive guide detailing architectural decisions for content extraction, processing, and workflow management in a modular, flexible system." />
+    <doc path="starter-template-evaluation.md" description="A documentation explaining a hybrid BMAD and Claude Code Skills architecture for modular, extensible knowledge extraction workflows." />
+    <doc path="implementation-patterns-consistency-rules.md" description="AI workflow documentation that defines naming, structure, and communication conventions for consistent multi-stage processing." />
   </docs>
 
 </docs_index>

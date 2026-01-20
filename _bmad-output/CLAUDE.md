@@ -5,12 +5,12 @@
 
   ## Documentation Index: _bmad-output
 
-  <folder_description>Documentation of a project's context, analysis, planning, implementation, and created artifacts.</folder_description>
+  <folder_description>Documentation about a project's context, analysis, planning, implementation, and related creations.</folder_description>
 
   ### Files
 
   <docs>
-    <doc path="project-context.md" description="A comprehensive guide for AI agents detailing technology stack, language rules, workflow patterns, and testing approaches for the knowledge-library project." />
+    <doc path="project-context.md" description="Comprehensive documentation for knowledge-library project, detailing TypeScript, Bun, and BMAD framework rules for AI agent implementation." />
   </docs>
 
   ### Subfolders
@@ -18,10 +18,10 @@
   For detailed documentation in subfolders, read the CLAUDE.md file in each subfolder.
 
   <subfolders>
-    <subfolder path="analysis/" hint="Research findings, data reports, statistical summaries, and project insights." />
-    <subfolder path="archive/" hint="Historical records, old files, and past project documentation." />
-    <subfolder path="planning-artifacts/" hint="Project roadmaps, meeting notes, requirements, and strategy documents." />
-    <subfolder path="implementation-artifacts/" hint="Design specs, test plans, and architectural diagrams for project implementation." />
-    <subfolder path="bmb-creations/" hint="Portfolio of creative projects by an artist or designer." />
+    <subfolder path="analysis/" hint="Research findings, data summaries, and statistical reports for project." />
+    <subfolder path="archive/" hint="Historical records, old files, and past project documents from previous years." />
+    <subfolder path="planning-artifacts/" hint="Project plans, roadmaps, requirements, and strategy documents." />
+    <subfolder path="implementation-artifacts/" hint="Project details, design specs, test plans, and deployment documentation." />
+    <subfolder path="bmb-creations/" hint="Creative multimedia projects and design documents for personal brand." />
   </subfolders>
 </docs_index>
