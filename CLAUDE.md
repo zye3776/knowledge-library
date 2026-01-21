@@ -110,22 +110,16 @@ cd .claude/skills/skill-name && bun install && bun run build
 |----------|---------|
 | `OPENAI_API_KEY` | Required for tts-openai skill |
 
-## Conventions
+## Technical Research
 
-| Element | Convention |
-|---------|------------|
-| Workflow folders | kebab-case |
-| Step files | `step-{NN}-{action}.md` |
-| YAML keys | snake_case |
-| Dates | ISO 8601 |
-| Output files | `transcript.md`, `refined.md`, `audio.mp3` |
+<critical_rules>
+Use DeepWiki MCP as the PRIMARY source for technical research over WebSearch:
 
-## Error Handling
-
-- Halt on error with clear message
-- Log to `metadata.yaml`
-- Present `[R]` Retry, `[S]` Skip, `[X]` Exit options
-- No automatic retries
+- Setup guides for technologies
+- Troubleshooting library/framework issues
+- Validating implementations against library documentation
+- API reference and correct usage patterns
+</critical_rules>
 
 <constraints>
 ## Do NOT
