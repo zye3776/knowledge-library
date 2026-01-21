@@ -83,39 +83,36 @@ Skills, commands, and agents use hybrid formatting:
 
 ## Commands
 
-### Skill Scripts
-
 ```bash
-# TTS playback
-.claude/skills/tts-openai/scripts/speak "text"
-.claude/skills/tts-openai/scripts/speak -f file.txt
-.claude/skills/tts-openai/scripts/speak --chunked -f long.txt -d /tmp/output
+# Linting & Formatting (from project root)
+bun run lint              # Check for ESLint errors
+bun run lint:fix          # Auto-fix ESLint errors
+bun run format            # Format with Prettier
+bun run format:check      # Check formatting
+
+# Testing (within skill directories)
+cd .claude/skills/skill-name
+bun test                  # Run all tests
+bun test --watch          # Watch mode
+bun test scripts/main.test.ts  # Run single test file
 
 # Build a skill
 cd .claude/skills/skill-name && bun install && bun run build
+
+# TTS playback
+.claude/skills/tts-openai/scripts/speak "text"
+.claude/skills/tts-openai/scripts/speak -f file.txt
 ```
 
-### Testing
+## Pre-commit Hooks
 
-```bash
-bun test                  # Run tests
-bun test --watch          # Watch mode
-```
+Husky runs on commit to auto-update CLAUDE.md index files for staged markdown changes.
 
 ## Environment Variables
 
 | Variable | Purpose |
 |----------|---------|
 | `OPENAI_API_KEY` | Required for tts-openai skill |
-
-## MCP Tools
-
-DeepWiki MCP is configured for repository documentation queries:
-```
-mcp__deepwiki__ask_question
-  repoName: "anthropics/claude-code"
-  question: "How do skill hooks work?"
-```
 
 ## Conventions
 
@@ -141,6 +138,7 @@ mcp__deepwiki__ask_question
 - Skip A/P/C menu presentation
 - Overwrite content without confirmation
 - Use Python for new skills (use TypeScript + Bun)
+- Use npm, yarn, or pnpm (always use bun)
 - Hardcode paths (use config values)
 - Ship skills without tests
 - Search or read from `node_modules/` folders (especially in `.claude/skills/*/node_modules/`)
