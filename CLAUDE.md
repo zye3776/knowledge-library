@@ -104,10 +104,6 @@ cd .claude/skills/skill-name && bun install && bun run build
 .claude/skills/tts-openai/scripts/speak -f file.txt
 ```
 
-## Pre-commit Hooks
-
-Husky runs on commit to auto-update CLAUDE.md index files for staged markdown changes.
-
 ## Environment Variables
 
 | Variable | Purpose |
