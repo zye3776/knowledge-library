@@ -101,3 +101,6 @@ temp/
 
 # runtime files
 libraries/
+
+# Claude Code
+.claude/plans/
