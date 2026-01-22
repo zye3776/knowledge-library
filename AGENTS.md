@@ -1,169 +1,135 @@
-# AGENTS.md
+## Project Overview
 
-Guide for agentic coding agents working in the BMAD knowledge-library repository.
+This is a **BMAD knowledge-library** - a Claude Code plugin/extension that enables users to extract YouTube video transcripts, refine them by removing noise (sponsors, ads, visual references), and convert them to audio via TTS for listening on walks/commutes.
 
-## Project Type
+<critical_rules>
+This is NOT a standalone CLI tool. It's a BMAD module (v6.0.0-alpha.23) with step-file workflows orchestrated through Claude Code.
+</critical_rules>
 
-BMAD module (v6.0.0-alpha.23) - a Claude Code plugin/extension. NOT a standalone CLI tool.
+## Architecture
 
-## Build/Test Commands
+### Directory Structure
 
-### For Skills (TypeScript + Bun)
+| Path | Purpose |
+|------|---------|
+| `_bmad/` | BMAD framework modules (core, bmm, bmb, cis) |
+| `_bmad-output/` | Generated artifacts (planning, implementation) |
+| `.claude/skills/` | Claude Code skills (TypeScript + Bun) |
+| `.claude/agents/` | Custom subagents |
+| `.claude/rules/` | Development standards |
+| `.claude/commands/` | Slash commands |
 
+### BMAD Modules
+
+- **core**: Brainstorming, party-mode workflows, bmad-master agent
+- **bmm**: Business Method Module - PM, dev, architect agents and workflows
+- **bmb**: BMAD Module Builder - create agents/workflows/modules
+- **cis**: Creative & Innovation Suite - design thinking, problem solving
+
+### Content Library Structure (after implementation)
+
+```
+libraries/{slug}/
+├── transcript.md     # Raw extraction
+├── refined.md        # Cleaned content
+├── audio.mp3         # TTS output
+└── metadata.yaml     # Source info, pipeline state
+```
+
+## Key Patterns
+
+### BMAD Workflows
+
+- Entry point: `workflow.md`
+- Steps: `steps/` or tri-modal `steps-c/`, `steps-e/`, `steps-v/`
+- Step naming: `step-{NN}-{action}.md`
+
+<critical_rules>
+- Always present A/P/C menu after content generation
+- Never auto-advance without user approval
+- Update frontmatter `stepsCompleted` array on progression
+</critical_rules>
+
+### Skills Development
+
+Skills use TypeScript + Bun with TDD:
 ```bash
 cd .claude/skills/skill-name
-bun install              # Install dependencies
-bun test                 # Run all tests
-bun test scripts/script.test.ts  # Run single test file
-bun test --test-name-pattern="test name"  # Run matching tests
-bun test --watch         # Watch mode
-bun run build            # Build standalone (after tests pass)
-bun build scripts/script.ts --compile --outfile scripts/script
+bun install
+bun test          # Run tests first
+bun run build     # Create standalone executable
 ```
 
-TypeScript provides built-in type checking via Bun. No separate typecheck command needed.
-
-## Code Style Guidelines
-
-### Language & Runtime
-
-- **Language**: TypeScript only (Python NOT allowed for new skills)
-- **Runtime**: Bun (https://bun.sh)
-- **Module System**: ESM (`"type": "module"` in package.json)
-
-### File Organization
-
+Required structure:
 ```
 skill-name/
-├── SKILL.md              # Overview (< 500 lines)
-├── package.json          # Dependencies and scripts
+├── SKILL.md              # < 500 lines
+├── package.json
 ├── scripts/
-│   ├── main.ts           # Main executable
-│   └── main.test.ts      # Tests (required)
+│   ├── main.ts
+│   └── main.test.ts      # Tests required
 └── references/           # Large docs (on-demand)
 ```
 
-### Imports
+### Hybrid XML + Markdown
 
-```typescript
-// Node built-ins first
-import { spawn } from "child_process";
-// External dependencies second
-import { Command } from "commander";
-import OpenAI from "openai";
-// Local modules third
+Skills, commands, and agents use hybrid formatting:
+- **XML tags**: `<critical_rules>`, `<constraints>`, `<instructions>`, `<user_input>`
+- **Markdown**: Headers, code blocks, lists, documentation
+
+## Commands
+
+```bash
+# Linting & Formatting (from project root)
+bun run lint              # Check for ESLint errors
+bun run lint:fix          # Auto-fix ESLint errors
+bun run format            # Format with Prettier
+bun run format:check      # Check formatting
+
+# Testing (within skill directories)
+cd .claude/skills/skill-name
+bun test                  # Run all tests
+bun test --watch          # Watch mode
+bun test scripts/main.test.ts  # Run single test file
+
+# Build a skill
+cd .claude/skills/skill-name && bun install && bun run build
+
+# TTS playback
+.claude/skills/tts-openai/scripts/speak "text"
+.claude/skills/tts-openai/scripts/speak -f file.txt
 ```
 
-### TypeScript Patterns
+## Environment Variables
 
-```typescript
-interface State {
-  status: "generating" | "ready" | "completed";
-  last_updated?: string;
-}
+| Variable | Purpose |
+|----------|---------|
+| `OPENAI_API_KEY` | Required for tts-openai skill |
 
-async function loadData(path: string): Promise<State | null> {
-  try {
-    return await Bun.file(path).json();
-  } catch {
-    return null;
-  }
-}
-```
+## Technical Research
 
-Use `const` for variables, `let` only when reassignment needed. Define interfaces for complex types. Use type assertions sparingly (`as Type`). Async/await preferred over callbacks.
+<critical_rules>
+Use DeepWiki MCP as the PRIMARY source for technical research over WebSearch:
 
-### Naming Conventions
+- Setup guides for technologies
+- Troubleshooting library/framework issues
+- Validating implementations against library documentation
+- API reference and correct usage patterns
+</critical_rules>
 
-| Element | Style | Example |
-|---------|-------|---------|
-| Files | kebab-case | `tts-openai`, `speak.ts` |
-| Classes/Types | PascalCase | `PlaybackState`, `Voice` |
-| Functions | camelCase | `generateAudio`, `loadState` |
-| Constants | SCREAMING_SNAKE_CASE | `DEFAULT_VOICE` |
-| Variables | camelCase | `outputDir` |
+<constraints>
+## Do NOT
 
-### Error Handling
+- Auto-advance workflow steps without user approval
+- Skip A/P/C menu presentation
+- Overwrite content without confirmation
+- Use Python for new skills (use TypeScript + Bun)
+- Use npm, yarn, or pnpm (always use bun)
+- Hardcode paths (use config values)
+- Ship skills without tests
+- Search or read from `node_modules/` folders (especially in `.claude/skills/*/node_modules/`)
+</constraints>
 
-```typescript
-try {
-  const result = await operation();
-  return result;
-} catch (error: unknown) {
-  const message = error instanceof Error ? error.message : String(error);
-  console.error(`Error: ${message}`);
-  process.exit(1);
-}
-```
-
-### Console Output
-
-- `console.log` - for data output (pipeable)
-- `console.error` - for status/progress (non-pipeable)
-- Use `process.stderr.write("\r...")` for in-place updates
-
-### CLI Pattern
-
-```typescript
-#!/usr/bin/env bun  // Required shebang
-import { Command } from "commander";
-
-const program = new Command();
-program.name("script-name").description("Brief")
-  .argument("[input]", "Input description")
-  .option("-o, --output <file>", "Output file")
-  .action(async (input, options) => { /* ... */ });
-program.parse();
-```
-
-### Testing (TDD Required)
-
-```typescript
-import { describe, it, expect } from "bun:test";
-
-describe("functionName", () => {
-  it("should handle normal input", () => {
-    const result = functionName("input");
-    expect(result).toBe("expected");
-  });
-
-  it("should handle edge cases", () => {
-    expect(() => functionName("")).toThrow();
-  });
-
-  it("should handle async operations", async () => {
-    const result = await asyncFunction();
-    expect(result).toBeDefined();
-  });
-});
-```
-
-**TDD Workflow:** Write failing test → Implement minimal code → Refactor → Build
-
-### Formatting
-
-2-space indentation, single quotes, semicolons required, max 80-100 chars/line, no trailing whitespace, empty line between functions.
-
-## Constraints
-
-- NO auto-advancing workflow steps without user approval
-- NO Python for new skills (use TypeScript + Bun)
-- NO searching/reading from `node_modules/` folders
-- NO hardcoding paths (use config values)
-- ALL scripts must have tests
-- ALL tests must pass before building
-- SKILL.md files must be under 500 lines
-
-## File Patterns to Ignore
-
-When using Glob or Grep, exclude: `node_modules/`, `.git/`, `_bmad-output/`, `dist/`, `build/`
-
-## Common Pitfalls
-
-- Missing `#!/usr/bin/env bun` shebang
-- Forgetting `process.exit(1)` on errors
-- Using `console.log` for status (should be `console.error`)
-- Not defining interfaces for complex types
-- Writing tests after implementation (violates TDD)
-- Building before tests pass
-- Exceeding 500 lines in SKILL.md (use references/ folder)
+<system_reminder>
+Key points: This is a BMAD module, not a CLI tool. Always use TypeScript + Bun for skills. Never auto-advance workflows. Never search/read node_modules.
+</system_reminder>
