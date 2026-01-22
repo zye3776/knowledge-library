@@ -8,9 +8,6 @@ node_modules/
 # Compiled binary (rebuild with: bun run build)
 scripts/speak
 
-# Lock files (optional - can be committed if you want reproducible builds)
-bun.lock
-
 # Python artifacts (legacy)
 __pycache__/
 *.pyc
