@@ -2,9 +2,9 @@
 name: 'step-05-process-stories'
 description: 'Core processing loop - generate implementation plans and save'
 
-nextStepFile: './step-06-finalize.md'
+nextStepFile: './step-06-review.md'
 stateFile: '{output_folder}/implementation-plan-state.yaml'
-planTemplate: '../data/implementation-plan-template.md'
+planTemplate: '../templates/implementation-plan-template.md'
 epicsFolder: '{output_folder}/planning-artifacts/epics'
 
 # Skills to invoke

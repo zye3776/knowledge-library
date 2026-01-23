@@ -1,12 +1,12 @@
 ---
-name: 'step-06-finalize'
+name: 'step-07-finalize'
 description: 'Report final completion status and cleanup'
 
 stateFile: '{output_folder}/implementation-plan-state.yaml'
 epicsFolder: '{output_folder}/planning-artifacts/epics'
 ---
 
-# Step 6: Finalize
+# Step 7: Finalize
 
 ## STEP GOAL:
 
@@ -43,7 +43,7 @@ Report final completion status, summarize what was generated, and provide next s
 
 ## CONTEXT BOUNDARIES:
 
-- Previous: Step 05 processed all stories
+- Previous: Step 06 reviewed plans via party mode
 - Focus: Summary and completion
 - Limits: No more processing
 - This is the final step
@@ -150,7 +150,7 @@ Update {stateFile}:
 workflowName: create-implementation-plan
 status: COMPLETED
 completedAt: [current timestamp]
-stepsCompleted: ['step-01-init', 'step-02-scan-epics', 'step-03-select-scope', 'step-04-select-mode', 'step-05-process-stories', 'step-06-finalize']
+stepsCompleted: ['step-01-init', 'step-02-scan-epics', 'step-03-select-scope', 'step-04-select-mode', 'step-05-process-stories', 'step-06-review', 'step-07-finalize']
 summary:
   totalStories: [N]
   plansGenerated: [M]

@@ -9,7 +9,8 @@ nextStepOptions:
   step-03-select-scope: './step-03-select-scope.md'
   step-04-select-mode: './step-04-select-mode.md'
   step-05-process-stories: './step-05-process-stories.md'
-  step-06-finalize: './step-06-finalize.md'
+  step-06-review: './step-06-review.md'
+  step-07-finalize: './step-07-finalize.md'
 ---
 
 # Step 1b: Continue Workflow
@@ -109,7 +110,8 @@ Display:
 | `step-03-select-scope` | `step-04-select-mode` | Need mode selection |
 | `step-04-select-mode` | `step-05-process-stories` | Ready to process |
 | `step-05-process-stories` (partial) | `step-05-process-stories` | Resume processing |
-| `step-05-process-stories` (complete) | `step-06-finalize` | Ready to finalize |
+| `step-05-process-stories` (complete) | `step-06-review` | Ready for review |
+| `step-06-review` | `step-07-finalize` | Ready to finalize |
 
 ### 5. Confirm and Route
 

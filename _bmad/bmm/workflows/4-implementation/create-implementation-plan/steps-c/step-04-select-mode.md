@@ -68,24 +68,26 @@ You have selected [N] stories for implementation plan generation.
 
 **[S] Sequential Mode** (Recommended for < 5 stories)
 Each story goes through the FULL cycle before moving to next:
-  Story 1: Generate → OpenCode Review → Party Mode → Save
-  Story 2: Generate → OpenCode Review → Party Mode → Save
+  Story 1: Load Context → Generate Plan → Save
+  Story 2: Load Context → Generate Plan → Save
   ...
+  Then: Party Mode Review → Finalize
 
-✓ Each plan can benefit from learnings of previous reviews
+✓ Each plan can benefit from learnings of previous plans
 ✓ Easier to pause and resume between stories
 ✓ Lower context/memory usage
 ✗ Slower for many stories
 
 **[B] Batch Mode** (Recommended for 5+ stories)
 All stories go through each phase together:
-  Phase 1: Generate ALL plans
-  Phase 2: OpenCode reviews ALL plans
-  Phase 3: Party Mode reviews ALL plans
-  Phase 4: Save ALL plans
+  Phase 1: Load project context once
+  Phase 2: Generate ALL plans
+  Phase 3: Save ALL plans
+  Phase 4: Party Mode Review
+  Phase 5: Finalize
 
 ✓ Faster overall processing
-✓ Reviews can see patterns across stories
+✓ Consistent context across all plans
 ✓ Better for consistency across plans
 ✗ Higher context/memory usage
 ✗ Harder to pause mid-batch
@@ -118,14 +120,14 @@ Display:
 |--------|-------|
 | Stories | [N] selected |
 | Mode | [Sequential/Batch] |
-| Reviews | OpenCode + Party Mode |
 | Output | {story-name}.implement.md per story |
 
 **Process Overview:**
 [Show flow diagram based on selected mode]
 
-This will invoke the following skills:
-- z-load-project-context (load project-brief, architecture, prd)
+This will invoke the following:
+- z-load-project-context skill (load project-brief, architecture, prd)
+- BMM Party Mode workflow (multi-agent review of generated plans)
 
 **Ready to start?**
 ```
