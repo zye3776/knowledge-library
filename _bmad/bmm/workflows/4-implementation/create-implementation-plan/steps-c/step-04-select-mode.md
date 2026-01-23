@@ -125,9 +125,7 @@ Display:
 [Show flow diagram based on selected mode]
 
 This will invoke the following skills:
-- dev-load-project-context (load architecture, prd, standards)
-- dev-opencode-review (forked context)
-- dev-party-mode-review (forked context)
+- z-load-project-context (load project-brief, architecture, prd)
 
 **Ready to start?**
 ```

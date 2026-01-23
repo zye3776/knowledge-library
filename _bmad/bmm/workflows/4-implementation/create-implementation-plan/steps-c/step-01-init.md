@@ -7,10 +7,10 @@ continueFile: './step-01b-continue.md'
 stateFile: '{output_folder}/implementation-plan-state.yaml'
 
 requiredDocs:
+  projectBrief: '{output_folder}/planning-artifacts/project-brief.md'
   architecture: '{output_folder}/planning-artifacts/architecture.md'
   prd: '{output_folder}/planning-artifacts/prd.md'
   epicsFolder: '{output_folder}/planning-artifacts/epics'
-  codingStandards: '{project-root}/.claude/rules'
 ---
 
 # Step 1: Initialize
@@ -81,10 +81,10 @@ Check that each required document/folder exists:
 
 | Document | Path | Status |
 |----------|------|--------|
+| Project Brief | `{requiredDocs.projectBrief}` | Check exists |
 | Architecture | `{requiredDocs.architecture}` | Check exists |
 | PRD | `{requiredDocs.prd}` | Check exists |
 | Epics Folder | `{requiredDocs.epicsFolder}` | Check exists and contains at least one epic |
-| Coding Standards | `{requiredDocs.codingStandards}` | Check exists |
 
 ### 3. Report Validation Results
 
@@ -95,10 +95,10 @@ Display:
 **Validation Complete**
 
 All required documents found:
+- project-brief.md
 - architecture.md
 - prd.md
 - epics/ folder with [N] epic(s)
-- coding standards
 
 Ready to scan epics and generate implementation plans.
 ```
@@ -115,6 +115,7 @@ Missing required documents:
 Please ensure all planning artifacts exist before running this workflow.
 Required structure:
 _bmad-output/planning-artifacts/
+├── project-brief.md
 ├── architecture.md
 ├── prd.md
 └── epics/

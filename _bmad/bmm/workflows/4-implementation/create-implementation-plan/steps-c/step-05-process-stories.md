@@ -8,7 +8,7 @@ planTemplate: '../data/implementation-plan-template.md'
 epicsFolder: '{output_folder}/planning-artifacts/epics'
 
 # Skills to invoke
-loadContextSkill: 'dev-load-project-context'
+loadContextSkill: 'z-load-project-context'
 ---
 
 # Step 5: Process Stories
@@ -51,7 +51,7 @@ Execute the core processing loop - generate implementation plans and save comple
 
 - Previous: User selected scope and mode
 - Focus: Autonomous plan generation
-- Skills: dev-load-project-context
+- Skills: z-load-project-context
 - Output: {story-name}.implement.md files
 
 ## MANDATORY SEQUENCE
@@ -101,11 +101,12 @@ Display: "**Epic and story files loaded.** [N] stories ready for processing."
 **Invoke {loadContextSkill}:**
 
 The skill returns a document index. From the skill output, read these documents:
+- `_bmad-output/planning-artifacts/project-brief.md` - Project vision and goals
 - `_bmad-output/planning-artifacts/architecture.md` - Technical decisions
 - `_bmad-output/planning-artifacts/prd.md` - Product requirements
 - `docs/guides-agents/KISS-principle-agent-guide.md` - Simplicity guidelines
 
-Display: "**Project context loaded.** Architecture, PRD, and KISS principles ready."
+Display: "**Project context loaded.** Project brief, architecture, PRD, and KISS principles ready."
 
 ### 4. Process Stories (Mode-Dependent)
 
