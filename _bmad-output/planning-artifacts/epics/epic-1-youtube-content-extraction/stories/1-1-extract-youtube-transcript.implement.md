@@ -4,7 +4,7 @@ story_name: "extract-youtube-transcript"
 epic: "epic-1-youtube-content-extraction"
 epic_path: "_bmad-output/planning-artifacts/epics/epic-1-youtube-content-extraction"
 story_path: "_bmad-output/planning-artifacts/epics/epic-1-youtube-content-extraction/stories/1-1-extract-youtube-transcript.md"
-created: "2026-01-19"
+created: "2026-01-23"
 status: READY_FOR_DEV
 ---
 
@@ -12,115 +12,70 @@ status: READY_FOR_DEV
 
 ## Overview
 
-This story implements the foundational extraction capability for the knowledge-library module. Users provide a YouTube URL and receive the transcript text. The implementation creates a Claude Code skill (`extract-youtube`) that wraps yt-dlp for subtitle extraction with proper error handling.
+Create the `extract-youtube` skill - a TypeScript + Bun CLI tool that wraps yt-dlp to extract transcripts from YouTube videos. This is the foundational extraction capability that all downstream workflows depend on.
 
-This is a core building block that all other extraction workflows will depend on.
+**Deliverable:** A skill that accepts a YouTube URL and outputs plain text transcript to stdout.
 
-## Technical Decisions
+## Architecture Alignment
 
-### Architecture Alignment
+| Decision | Implementation | Source |
+|----------|----------------|--------|
+| External service | Direct yt-dlp CLI via Bun shell | core-architectural-decisions.md |
+| Output format | Plain text to stdout | KISS: caller handles file saving |
+| Error handling | Discriminated union Result type | KISS-principle-agent-guide.md |
+| Skill pattern | Mirror `tts-openai` structure | CLAUDE.md |
+| Runtime | TypeScript + Bun | CLAUDE.md |
 
-- **BMAD Module + Claude Code Skills pattern**: Per architecture.md, this is implemented as a Claude Code Skill (action executor)
-- **Direct CLI via Bash**: yt-dlp invoked directly, user must have it installed
-- **TypeScript + Bun**: Per CLAUDE.md, all new skills use TypeScript with Bun runtime
-- **TDD approach**: Tests written first per project conventions
-
-### Technology Choices
-
-| Choice | Rationale |
-|--------|-----------|
-| TypeScript + Bun | Project standard for skills (CLAUDE.md) |
-| Direct yt-dlp CLI | Simplest approach per NFR11 (minimal dependencies) |
-| Bash tool execution | Native Claude Code capability, no extra libraries |
-| stdout/stderr capture | Clean separation of output vs errors |
-
-### Trade-offs Considered
-
-| Option | Pros | Cons | Decision |
-|--------|------|------|----------|
-| yt-dlp via Bash | Simple, direct, no wrapper libs | Requires yt-dlp installed | **Selected** - simplest |
-| youtube-dl npm package | Pure JS, no system dependency | Abandoned project, less reliable | Rejected |
-| pytube via Python | Active project | Adds Python dependency | Rejected |
-
-## Code Structure
-
-### Files to Create
+## Files to Create
 
 ```
 .claude/skills/extract-youtube/
-├── SKILL.md              # Skill definition (< 500 lines)
-├── package.json          # Bun project config
+├── SKILL.md              # Skill documentation
+├── package.json          # Project config (no runtime deps)
 ├── tsconfig.json         # TypeScript config
+├── .gitignore            # Ignore node_modules, build artifacts
 └── scripts/
-    ├── extract.ts        # Main extraction script
-    └── extract.test.ts   # Tests (required)
-```
-
-### Files to Modify
-
-```
-None - this is a new skill with no existing files to modify
-```
-
-### Folder Structure
-
-```
-.claude/skills/
-├── tts-openai/           # Existing TTS skill
-├── tts-say/              # Existing TTS skill
-└── extract-youtube/      # NEW - this implementation
-    ├── SKILL.md
-    ├── package.json
-    ├── tsconfig.json
-    └── scripts/
-        ├── extract.ts
-        └── extract.test.ts
+    ├── extract.ts        # Main implementation
+    └── extract.test.ts   # Test suite
 ```
 
 ## Dependencies
 
-### Environment Variables
-
-| Variable | Purpose | Example |
-|----------|---------|---------|
-| None required | yt-dlp uses no auth for public videos | - |
-
-### External Libraries
-
-| Package | Version | Purpose |
-|---------|---------|---------|
-| bun | latest | Runtime (dev dependency) |
-| @types/bun | latest | TypeScript types |
-
-### System Dependencies
+### System Requirements
 
 | Dependency | Purpose | Install |
 |------------|---------|---------|
-| yt-dlp | YouTube subtitle extraction | `brew install yt-dlp` or `pip install yt-dlp` |
+| yt-dlp | YouTube subtitle extraction | `brew install yt-dlp` |
+| bun | Runtime | Pre-installed in project |
 
-### Internal Dependencies
+### Package Dependencies
 
-- None - this is a foundational skill with no internal dependencies
+```json
+{
+  "devDependencies": {
+    "@types/bun": "latest"
+  }
+}
+```
+
+No runtime dependencies - uses Bun's built-in shell for subprocess execution.
 
 ## Implementation Steps
 
 ### Step 1: Create Skill Scaffold
 
-Create the skill folder structure:
+**Goal:** Set up project structure matching `tts-openai` pattern.
 
-```bash
-mkdir -p .claude/skills/extract-youtube/scripts
-```
-
-Create `package.json`:
+**package.json:**
 ```json
 {
   "name": "extract-youtube",
   "version": "1.0.0",
   "type": "module",
   "scripts": {
+    "build": "bun build scripts/extract.ts --compile --outfile scripts/extract",
     "test": "bun test",
-    "build": "bun build ./scripts/extract.ts --compile --outfile=./scripts/extract"
+    "test:watch": "bun test --watch"
   },
   "devDependencies": {
     "@types/bun": "latest"
@@ -128,7 +83,7 @@ Create `package.json`:
 }
 ```
 
-Create `tsconfig.json`:
+**tsconfig.json:**
 ```json
 {
   "compilerOptions": {
@@ -144,194 +99,498 @@ Create `tsconfig.json`:
 }
 ```
 
-### Step 2: Write Tests First (TDD)
-
-Create `scripts/extract.test.ts` with tests for:
-
-1. **Valid URL extraction** - Returns transcript text
-2. **Invalid URL format** - Returns error with clear message
-3. **Missing subtitles** - Returns error explaining subtitles unavailable
-4. **URL validation** - Rejects non-YouTube URLs
-
-Test structure:
-```typescript
-import { describe, test, expect } from "bun:test";
-import { extractTranscript, validateYouTubeUrl, parseYtDlpError } from "./extract";
-
-describe("validateYouTubeUrl", () => {
-  test("accepts valid youtube.com URLs", () => { /* ... */ });
-  test("accepts valid youtu.be URLs", () => { /* ... */ });
-  test("rejects non-YouTube URLs", () => { /* ... */ });
-  test("rejects malformed URLs", () => { /* ... */ });
-});
-
-describe("parseYtDlpError", () => {
-  test("identifies missing subtitles", () => { /* ... */ });
-  test("identifies network errors", () => { /* ... */ });
-  test("identifies unavailable video", () => { /* ... */ });
-});
-
-describe("extractTranscript", () => {
-  test("returns transcript for valid video with subtitles", async () => { /* ... */ });
-  test("returns error for video without subtitles", async () => { /* ... */ });
-});
+**.gitignore:**
+```
+node_modules/
+scripts/extract
+*.log
 ```
 
-### Step 3: Implement Core Extraction Logic
+---
 
-Create `scripts/extract.ts`:
+### Step 2: Write Tests (TDD)
 
-**Key functions:**
+**Goal:** Define expected behavior before implementation.
 
-1. `validateYouTubeUrl(url: string): Result<string, string>`
-   - Validate URL format
-   - Accept youtube.com and youtu.be formats
-   - Return normalized URL or error
+**File:** `scripts/extract.test.ts`
 
-2. `extractTranscript(url: string): Promise<Result<string, string>>`
-   - Validate URL first
-   - Execute yt-dlp with appropriate flags
-   - Parse output, handle errors
-   - Return transcript text or error
+**Test Categories:**
 
-3. `parseYtDlpError(stderr: string): string`
-   - Parse yt-dlp error output
-   - Return user-friendly error message
+1. **URL Validation**
+   - Accepts `youtube.com/watch?v=ID` format
+   - Accepts `youtu.be/ID` format
+   - Accepts `youtube.com/shorts/ID` format
+   - Rejects non-YouTube URLs
+   - Rejects malformed URLs
+   - Extracts video ID correctly
 
-**yt-dlp command:**
-```bash
-yt-dlp --write-auto-sub --sub-lang en --skip-download --print-to-file "%(subtitles)s" - "URL"
-```
+2. **VTT Parsing**
+   - Strips WEBVTT header
+   - Removes timestamp lines
+   - Removes position markers
+   - Deduplicates repeated lines (auto-subs quirk)
+   - Preserves paragraph structure
 
-Alternative approach (simpler):
-```bash
-yt-dlp --write-sub --write-auto-sub --sub-lang en --skip-download -o "/tmp/yt-%(id)s" "URL"
-# Then read the .vtt or .srt file
-```
+3. **Error Parsing**
+   - Identifies "no subtitles" from yt-dlp output
+   - Identifies network errors
+   - Identifies unavailable video errors
 
-### Step 4: Implement CLI Entry Point
+4. **Integration** (requires yt-dlp)
+   - Extracts transcript from known video with CC
+   - Returns error for video without CC
 
-Add CLI handling to `scripts/extract.ts`:
+---
+
+### Step 3: Implement Core Types
+
+**File:** `scripts/extract.ts`
 
 ```typescript
-// CLI entry point
-if (import.meta.main) {
-  const url = Bun.argv[2];
-  if (!url) {
-    console.error("Usage: extract <youtube-url>");
-    process.exit(1);
-  }
+// Discriminated union Result type (KISS pattern)
+type Result<T, E = string> =
+  | { ok: true; data: T }
+  | { ok: false; error: E };
 
-  const result = await extractTranscript(url);
-  if (!result.ok) {
-    console.error(result.error);
-    process.exit(1);
-  }
+// Specific error types for better handling
+type ExtractionError =
+  | { type: "invalid_url"; message: string }
+  | { type: "no_subtitles"; message: string }
+  | { type: "network_error"; message: string }
+  | { type: "video_unavailable"; message: string }
+  | { type: "yt_dlp_not_found"; message: string }
+  | { type: "yt_dlp_error"; message: string; details: string };
 
-  console.log(result.data);
+interface ExtractionResult {
+  transcript: string;
+  videoId: string;
 }
 ```
 
-### Step 5: Create SKILL.md
+---
 
-Create `.claude/skills/extract-youtube/SKILL.md`:
+### Step 4: Implement URL Validation
+
+**Function:** `validateYouTubeUrl(url: string): Result<{ url: string; videoId: string }, ExtractionError>`
+
+**Accepted formats:**
+- `https://www.youtube.com/watch?v=VIDEO_ID`
+- `https://youtube.com/watch?v=VIDEO_ID`
+- `https://youtu.be/VIDEO_ID`
+- `https://www.youtube.com/shorts/VIDEO_ID`
+
+**Implementation approach:**
+```typescript
+function validateYouTubeUrl(url: string): Result<{ url: string; videoId: string }, ExtractionError> {
+  const trimmed = url.trim();
+  if (!trimmed) {
+    return { ok: false, error: { type: "invalid_url", message: "URL cannot be empty" } };
+  }
+
+  // Regex patterns for YouTube URL formats
+  const patterns = [
+    /^https?:\/\/(?:www\.)?youtube\.com\/watch\?v=([a-zA-Z0-9_-]{11})/,
+    /^https?:\/\/youtu\.be\/([a-zA-Z0-9_-]{11})/,
+    /^https?:\/\/(?:www\.)?youtube\.com\/shorts\/([a-zA-Z0-9_-]{11})/,
+  ];
+
+  for (const pattern of patterns) {
+    const match = trimmed.match(pattern);
+    if (match) {
+      return { ok: true, data: { url: trimmed, videoId: match[1] } };
+    }
+  }
+
+  return {
+    ok: false,
+    error: {
+      type: "invalid_url",
+      message: `Invalid YouTube URL: "${trimmed}"\n\nExpected formats:\n  - https://www.youtube.com/watch?v=VIDEO_ID\n  - https://youtu.be/VIDEO_ID\n  - https://youtube.com/shorts/VIDEO_ID`,
+    },
+  };
+}
+```
+
+---
+
+### Step 5: Implement yt-dlp Execution
+
+**Function:** `runYtDlp(url: string): Promise<Result<string, ExtractionError>>`
+
+**yt-dlp command:**
+```bash
+yt-dlp --write-auto-sub --sub-lang en --skip-download -o "/tmp/yt-extract-%(id)s" "URL"
+```
+
+**Implementation approach:**
+```typescript
+async function runYtDlp(url: string): Promise<Result<string, ExtractionError>> {
+  const tmpDir = `/tmp/yt-extract-${Date.now()}`;
+
+  try {
+    // Check if yt-dlp exists
+    const whichResult = await Bun.$`which yt-dlp`.quiet();
+    if (whichResult.exitCode !== 0) {
+      return {
+        ok: false,
+        error: {
+          type: "yt_dlp_not_found",
+          message: "yt-dlp not found.\n\nInstall with: brew install yt-dlp",
+        },
+      };
+    }
+
+    // Run yt-dlp
+    const result = await Bun.$`yt-dlp --write-auto-sub --sub-lang en --skip-download -o "${tmpDir}/%(id)s" ${url}`.quiet();
+
+    if (result.exitCode !== 0) {
+      return parseYtDlpError(result.stderr.toString());
+    }
+
+    // Find and read the subtitle file
+    const files = await Array.fromAsync(new Bun.Glob("*.vtt").scan(tmpDir));
+    if (files.length === 0) {
+      // Try .srt as fallback
+      const srtFiles = await Array.fromAsync(new Bun.Glob("*.srt").scan(tmpDir));
+      if (srtFiles.length === 0) {
+        return {
+          ok: false,
+          error: {
+            type: "no_subtitles",
+            message: "No subtitles available for this video.\n\nThe video may not have captions enabled.",
+          },
+        };
+      }
+      // Parse SRT
+      const content = await Bun.file(`${tmpDir}/${srtFiles[0]}`).text();
+      return { ok: true, data: parseSrt(content) };
+    }
+
+    // Parse VTT
+    const content = await Bun.file(`${tmpDir}/${files[0]}`).text();
+    return { ok: true, data: parseVtt(content) };
+
+  } finally {
+    // Cleanup temp files
+    await Bun.$`rm -rf ${tmpDir}`.quiet();
+  }
+}
+```
+
+---
+
+### Step 6: Implement VTT/SRT Parsing
+
+**Functions:** `parseVtt(content: string): string` and `parseSrt(content: string): string`
+
+**VTT format example:**
+```
+WEBVTT
+Kind: captions
+Language: en
+
+00:00:00.000 --> 00:00:02.500
+Hello and welcome to this video
+
+00:00:02.500 --> 00:00:05.000
+Hello and welcome to this video
+Today we'll be discussing
+```
+
+**Implementation approach:**
+```typescript
+function parseVtt(content: string): string {
+  const lines = content.split("\n");
+  const textLines: string[] = [];
+  let lastLine = "";
+
+  for (const line of lines) {
+    // Skip header, timing lines, and position markers
+    if (
+      line.startsWith("WEBVTT") ||
+      line.startsWith("Kind:") ||
+      line.startsWith("Language:") ||
+      line.includes("-->") ||
+      line.match(/^[\d:.]+$/) ||
+      line.match(/^position:/) ||
+      line.match(/^align:/) ||
+      line.trim() === ""
+    ) {
+      continue;
+    }
+
+    // Strip HTML tags (sometimes present in subtitles)
+    const cleaned = line.replace(/<[^>]+>/g, "").trim();
+
+    // Deduplicate consecutive identical lines (auto-sub quirk)
+    if (cleaned && cleaned !== lastLine) {
+      textLines.push(cleaned);
+      lastLine = cleaned;
+    }
+  }
+
+  return textLines.join("\n");
+}
+
+function parseSrt(content: string): string {
+  const lines = content.split("\n");
+  const textLines: string[] = [];
+  let lastLine = "";
+
+  for (const line of lines) {
+    // Skip sequence numbers, timing lines, and empty lines
+    if (
+      line.match(/^\d+$/) ||
+      line.includes("-->") ||
+      line.trim() === ""
+    ) {
+      continue;
+    }
+
+    const cleaned = line.replace(/<[^>]+>/g, "").trim();
+    if (cleaned && cleaned !== lastLine) {
+      textLines.push(cleaned);
+      lastLine = cleaned;
+    }
+  }
+
+  return textLines.join("\n");
+}
+```
+
+---
+
+### Step 7: Implement Error Parsing
+
+**Function:** `parseYtDlpError(stderr: string): Result<never, ExtractionError>`
+
+**Implementation:**
+```typescript
+function parseYtDlpError(stderr: string): Result<never, ExtractionError> {
+  const err = stderr.toLowerCase();
+
+  if (err.includes("no subtitles") || err.includes("no automatic captions")) {
+    return {
+      ok: false,
+      error: {
+        type: "no_subtitles",
+        message: "No subtitles available for this video.\n\nThe video may not have captions enabled, or auto-generated captions are disabled.",
+      },
+    };
+  }
+
+  if (err.includes("video unavailable") || err.includes("private video") || err.includes("this video is not available")) {
+    return {
+      ok: false,
+      error: {
+        type: "video_unavailable",
+        message: "Video unavailable.\n\nThe video may be private, deleted, or region-restricted.",
+      },
+    };
+  }
+
+  if (err.includes("unable to download") || err.includes("network") || err.includes("connection")) {
+    return {
+      ok: false,
+      error: {
+        type: "network_error",
+        message: "Network error.\n\nCould not connect to YouTube. Please check your internet connection.",
+      },
+    };
+  }
+
+  return {
+    ok: false,
+    error: {
+      type: "yt_dlp_error",
+      message: "yt-dlp extraction failed.",
+      details: stderr,
+    },
+  };
+}
+```
+
+---
+
+### Step 8: Implement Main Function & CLI
+
+**Function:** `extractTranscript(url: string): Promise<Result<ExtractionResult, ExtractionError>>`
+
+**CLI Entry:**
+```typescript
+async function extractTranscript(url: string): Promise<Result<ExtractionResult, ExtractionError>> {
+  // Validate URL
+  const urlResult = validateYouTubeUrl(url);
+  if (!urlResult.ok) return urlResult;
+
+  // Extract transcript
+  const extractResult = await runYtDlp(urlResult.data.url);
+  if (!extractResult.ok) return extractResult;
+
+  return {
+    ok: true,
+    data: {
+      transcript: extractResult.data,
+      videoId: urlResult.data.videoId,
+    },
+  };
+}
+
+// CLI entry point
+if (import.meta.main) {
+  const url = Bun.argv[2];
+
+  if (!url || url === "--help" || url === "-h") {
+    console.log(`Usage: extract <youtube-url>
+
+Extract transcript from a YouTube video.
+
+Examples:
+  extract "https://www.youtube.com/watch?v=jNQXAC9IVRw"
+  extract "https://youtu.be/jNQXAC9IVRw"
+
+Exit codes:
+  0 - Success
+  1 - Invalid URL
+  2 - No subtitles available
+  3 - Network error
+  4 - Video unavailable
+  5 - yt-dlp not found
+  6 - Other yt-dlp error`);
+    process.exit(0);
+  }
+
+  const result = await extractTranscript(url);
+
+  if (!result.ok) {
+    console.error(result.error.message);
+    const exitCodes: Record<ExtractionError["type"], number> = {
+      invalid_url: 1,
+      no_subtitles: 2,
+      network_error: 3,
+      video_unavailable: 4,
+      yt_dlp_not_found: 5,
+      yt_dlp_error: 6,
+    };
+    process.exit(exitCodes[result.error.type]);
+  }
+
+  console.log(result.data.transcript);
+}
+
+// Export for testing
+export { extractTranscript, validateYouTubeUrl, parseVtt, parseSrt, parseYtDlpError };
+```
+
+---
+
+### Step 9: Create SKILL.md
+
+**File:** `.claude/skills/extract-youtube/SKILL.md`
 
 ```markdown
 ---
 name: extract-youtube
-description: Extract transcript from YouTube video using yt-dlp
+description: Extract transcripts from YouTube videos via yt-dlp for knowledge library ingestion.
 ---
 
 # Extract YouTube Transcript
 
-Extracts subtitle/transcript text from a YouTube video URL.
+Extract subtitles/transcripts from YouTube videos using yt-dlp.
 
-## Usage
+## When to Use
 
-\`\`\`bash
-.claude/skills/extract-youtube/scripts/extract "https://www.youtube.com/watch?v=VIDEO_ID"
-\`\`\`
+- User provides a YouTube URL to extract content from
+- Building knowledge library entries from video content
+- Need text version of spoken video content
 
-## Requirements
+**Requires:** yt-dlp installed (`brew install yt-dlp`)
 
-- yt-dlp must be installed (`brew install yt-dlp` or `pip install yt-dlp`)
-
-## Output
-
-- Success: Transcript text to stdout, exit code 0
-- Failure: Error message to stderr, exit code 1
-
-## Error Messages
-
-| Error | Meaning |
-|-------|---------|
-| "No subtitles available" | Video has no captions/subtitles |
-| "Invalid YouTube URL" | URL format not recognized |
-| "Video unavailable" | Private, deleted, or region-blocked |
-| "Network error" | Could not connect to YouTube |
-```
-
-### Step 6: Build and Test
+## Setup
 
 ```bash
 cd .claude/skills/extract-youtube
 bun install
-bun test              # Run tests
-bun run build         # Create executable
+bun run build
 ```
 
-### Step 7: Manual Verification
+## Quick Reference
 
-Run verification commands from story:
+| Task | Command |
+|------|---------|
+| Extract transcript | `./scripts/extract "https://youtube.com/watch?v=ID"` |
+| Help | `./scripts/extract --help` |
 
-```bash
-# AC1 - Successful extraction
-.claude/skills/extract-youtube/scripts/extract "https://www.youtube.com/watch?v=jNQXAC9IVRw"
+## Exit Codes
 
-# AC3 - Invalid URL
-.claude/skills/extract-youtube/scripts/extract "not-a-valid-url"
+| Code | Meaning |
+|------|---------|
+| 0 | Success |
+| 1 | Invalid URL |
+| 2 | No subtitles available |
+| 3 | Network error |
+| 4 | Video unavailable |
+| 5 | yt-dlp not found |
+| 6 | Other yt-dlp error |
+
+## Output
+
+- **Success:** Transcript text to stdout
+- **Failure:** Error message to stderr
 ```
+
+---
 
 ## Acceptance Criteria Mapping
 
-| Criteria | Implementation | Verification |
-|----------|----------------|--------------|
-| AC1: Valid URL with subtitles returns transcript | `extractTranscript()` executes yt-dlp, parses output | Run with known video, check transcript output |
-| AC2: No subtitles returns clear error | `parseYtDlpError()` detects subtitle errors | Test with video without captions |
-| AC3: Invalid URL returns clear error | `validateYouTubeUrl()` validates format | Test with malformed URLs |
-| AC4: Network failure returns actionable error | `parseYtDlpError()` detects network errors | Test with timeout/offline |
+| AC | Requirement | Implementation | Verification |
+|----|-------------|----------------|--------------|
+| AC1 | Valid URL with subtitles returns transcript | `extractTranscript()` → `runYtDlp()` → `parseVtt()` | `./scripts/extract "https://youtube.com/watch?v=jNQXAC9IVRw"` |
+| AC2 | No subtitles returns clear error | `parseYtDlpError()` detects subtitle errors | Test with video without CC |
+| AC3 | Invalid URL returns clear error | `validateYouTubeUrl()` validates format | `./scripts/extract "not-a-url"` |
+| AC4 | Network failure returns actionable error | `parseYtDlpError()` detects network errors | Disconnect network, run command |
 
-## Edge Cases & Error Handling
+## Verification Commands
 
-### Error Scenarios
+```bash
+# Build
+cd .claude/skills/extract-youtube && bun install && bun run build
 
-| Scenario | Handling | User Feedback |
-|----------|----------|---------------|
-| Invalid URL format | Validate before calling yt-dlp | "Invalid YouTube URL: [url]. Expected format: youtube.com/watch?v=... or youtu.be/..." |
-| Video without subtitles | Parse yt-dlp error | "No subtitles available for this video. The video may not have captions enabled." |
-| Private/deleted video | Parse yt-dlp error | "Video unavailable: This video may be private, deleted, or region-restricted." |
-| Network timeout | Parse yt-dlp error | "Network error: Could not connect to YouTube. Please check your internet connection." |
-| yt-dlp not installed | Check for binary | "yt-dlp not found. Install with: brew install yt-dlp" |
+# Run tests
+bun test
 
-### Boundary Conditions
+# AC1 - Successful extraction (Me at the zoo - first YouTube video)
+./scripts/extract "https://www.youtube.com/watch?v=jNQXAC9IVRw"
+echo "Exit code: $?"
+# Expected: Transcript text, exit code 0
 
-- Empty URL string: Return "Invalid YouTube URL" error
-- URL with extra whitespace: Trim before validation
-- Very long videos: yt-dlp handles this, no special handling needed
-- Non-English subtitles: Fall back to auto-generated if English unavailable
+# AC3 - Invalid URL
+./scripts/extract "not-a-url" 2>&1
+echo "Exit code: $?"
+# Expected: Error about invalid URL format, exit code 1
 
-### Recovery Strategies
+# AC2 - No subtitles (manual: find video without CC)
+# Expected: "No subtitles available" message, exit code 2
 
-- No automatic retries (per NFR10)
-- User can retry manually with same command
-- Failed extractions don't leave partial files (yt-dlp handles cleanup)
+# AC4 - Network error (manual: disconnect network)
+# Expected: "Network error" message, exit code 3
+```
 
-## KISS Compliance Checklist
+## KISS Compliance
 
-- [x] No premature abstraction - single concrete implementation
-- [x] No speculative generality - handles only YouTube URLs as specified
-- [x] Direct CLI execution - no wrapper libraries
-- [x] Guard clauses for error handling - early returns
-- [x] No deep nesting - flat control flow
-- [x] Result type for success/failure - discriminated union pattern
-- [x] Functions over classes - no state needed
+- [x] No runtime dependencies beyond Bun builtins
+- [x] Single responsibility: URL in → transcript text out
+- [x] Discriminated union Result type
+- [x] Guard clauses for early returns
+- [x] No speculative features
+- [x] Functions over classes (no state needed)
+- [x] Tests written before implementation (TDD)
+
+## Notes for Implementer
+
+1. **Start with tests** - Write `extract.test.ts` first covering URL validation and VTT parsing
+2. **Use Bun shell** - `Bun.$` for subprocess execution
+3. **VTT deduplication** - Auto-generated subs repeat lines, must dedupe
+4. **Temp file cleanup** - Always clean up `/tmp/yt-extract-*` directories
+5. **Error messages** - User-friendly, include actionable guidance
+6. **Keep simple** - This skill just extracts text, workflow handles file saving
