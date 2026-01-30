@@ -1,13 +1,13 @@
 {
-  "name": "dev-party-mode-review",
-  "version": "1.0.0",
-  "type": "module",
-  "scripts": {
-    "test": "bun test",
-    "test:watch": "bun test --watch"
-  },
-  "devDependencies": {
-    "@types/bun": "latest",
-    "yaml": "^2.3.4"
-  }
+	"name": "dev-party-mode-review",
+	"version": "1.0.0",
+	"type": "module",
+	"scripts": {
+		"test": "bun test",
+		"test:watch": "bun test --watch"
+	},
+	"devDependencies": {
+		"@types/bun": "latest",
+		"yaml": "^2.3.4"
+	}
 }

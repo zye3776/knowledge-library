@@ -1,21 +1,17 @@
 {
-  "name": "knowledge-library",
-  "version": "1.0.0",
-  "private": true,
-  "type": "module",
-  "scripts": {
-    "lint": "eslint '.claude/skills/**/scripts/**/*.ts'",
-    "lint:fix": "eslint --fix '.claude/skills/**/scripts/**/*.ts'",
-    "format": "prettier --write '.claude/skills/**/scripts/**/*.ts'",
-    "format:check": "prettier --check '.claude/skills/**/scripts/**/*.ts'"
-  },
-  "devDependencies": {
-    "@anthropic-ai/sdk": "^0.71.2",
-    "@eslint/js": "^9.18.0",
-    "eslint": "^9.18.0",
-    "eslint-config-prettier": "^10.0.1",
-    "globals": "^15.14.0",
-    "prettier": "^3.4.2",
-    "typescript-eslint": "^8.21.0"
-  }
+	"name": "knowledge-library",
+	"version": "1.0.0",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"check": "bunx biome check",
+		"check:fix": "bunx biome check --write",
+		"format": "bunx biome format --write",
+		"lint": "bunx biome lint",
+		"lint:fix": "bunx biome lint --write"
+	},
+	"devDependencies": {
+		"@anthropic-ai/sdk": "^0.71.2",
+		"@biomejs/biome": "2.3.13"
+	}
 }

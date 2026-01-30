@@ -5,16 +5,16 @@
  * Framework-agnostic - can be used with any CLI or application framework.
  */
 
+import { mkdir } from "fs/promises";
 import OpenAI from "openai";
 import { join } from "path";
-import { mkdir } from "fs/promises";
 import type { Voice } from "./types";
 
 /**
  * Create an OpenAI client
  */
 export function createClient(apiKey: string): OpenAI {
-  return new OpenAI({ apiKey });
+	return new OpenAI({ apiKey });
 }
 
 /**
@@ -22,32 +22,32 @@ export function createClient(apiKey: string): OpenAI {
  * Returns the audio as a Buffer
  */
 export async function generateSpeech(
-  client: OpenAI,
-  text: string,
-  voice: Voice,
-  model: string
+	client: OpenAI,
+	text: string,
+	voice: Voice,
+	model: string,
 ): Promise<Buffer> {
-  const response = await client.audio.speech.create({
-    model,
-    voice,
-    input: text,
-  });
+	const response = await client.audio.speech.create({
+		model,
+		voice,
+		input: text,
+	});
 
-  return Buffer.from(await response.arrayBuffer());
+	return Buffer.from(await response.arrayBuffer());
 }
 
 /**
  * Generate speech and save to file
  */
 export async function generateSpeechToFile(
-  client: OpenAI,
-  text: string,
-  voice: Voice,
-  model: string,
-  outputPath: string
+	client: OpenAI,
+	text: string,
+	voice: Voice,
+	model: string,
+	outputPath: string,
 ): Promise<void> {
-  const buffer = await generateSpeech(client, text, voice, model);
-  await Bun.write(outputPath, buffer);
+	const buffer = await generateSpeech(client, text, voice, model);
+	await Bun.write(outputPath, buffer);
 }
 
 /**
@@ -73,44 +73,44 @@ export type StopCheck = () => boolean;
  * @param shouldStop Function to check if generation should stop
  */
 export async function generateParagraphsAudio(
-  client: OpenAI,
-  paragraphs: string[],
-  outputDir: string,
-  voice: Voice,
-  model: string,
-  startFrom: number = 0,
-  onProgress?: ProgressCallback,
-  shouldStop?: StopCheck
+	client: OpenAI,
+	paragraphs: string[],
+	outputDir: string,
+	voice: Voice,
+	model: string,
+	startFrom: number = 0,
+	onProgress?: ProgressCallback,
+	shouldStop?: StopCheck,
 ): Promise<void> {
-  const paragraphsDir = join(outputDir, "paragraphs");
-  await mkdir(paragraphsDir, { recursive: true });
+	const paragraphsDir = join(outputDir, "paragraphs");
+	await mkdir(paragraphsDir, { recursive: true });
 
-  const total = paragraphs.length;
+	const total = paragraphs.length;
 
-  for (let i = 0; i < paragraphs.length; i++) {
-    if (i < startFrom) continue;
-    if (shouldStop?.()) break;
+	for (let i = 0; i < paragraphs.length; i++) {
+		if (i < startFrom) continue;
+		if (shouldStop?.()) break;
 
-    const paraNum = i + 1;
-    const audioFile = join(
-      paragraphsDir,
-      `${paraNum.toString().padStart(3, "0")}.mp3`
-    );
+		const paraNum = i + 1;
+		const audioFile = join(
+			paragraphsDir,
+			`${paraNum.toString().padStart(3, "0")}.mp3`,
+		);
 
-    // Skip if already generated
-    if (await Bun.file(audioFile).exists()) continue;
+		// Skip if already generated
+		if (await Bun.file(audioFile).exists()) continue;
 
-    onProgress?.(paraNum, total);
+		onProgress?.(paraNum, total);
 
-    await generateSpeechToFile(client, paragraphs[i], voice, model, audioFile);
-  }
+		await generateSpeechToFile(client, paragraphs[i], voice, model, audioFile);
+	}
 }
 
 /**
  * Check if API key is available
  */
 export function getApiKey(): string | undefined {
-  return process.env.OPENAI_API_KEY;
+	return process.env.OPENAI_API_KEY;
 }
 
 /**
@@ -118,9 +118,9 @@ export function getApiKey(): string | undefined {
  * @throws Error if API key is not set
  */
 export function requireApiKey(): string {
-  const apiKey = getApiKey();
-  if (!apiKey) {
-    throw new Error("OPENAI_API_KEY environment variable not set");
-  }
-  return apiKey;
+	const apiKey = getApiKey();
+	if (!apiKey) {
+		throw new Error("OPENAI_API_KEY environment variable not set");
+	}
+	return apiKey;
 }
