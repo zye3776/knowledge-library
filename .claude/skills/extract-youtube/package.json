@@ -1,0 +1,13 @@
+{
+  "name": "extract-youtube",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "build": "bun build scripts/extract.ts --compile --outfile scripts/extract",
+    "test": "bun test",
+    "test:watch": "bun test --watch"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  }
+}

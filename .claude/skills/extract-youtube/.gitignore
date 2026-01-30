@@ -1,0 +1,12 @@
+# Dependencies
+node_modules/
+
+# Bun build artifacts
+*.bun-build
+.*.bun-build
+
+# Compiled binary (rebuild with: bun run build)
+scripts/extract
+
+# macOS
+.DS_Store
