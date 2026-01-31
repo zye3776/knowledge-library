@@ -1,6 +1,6 @@
 # Story 1.1: Extract YouTube Transcript
 
-Status: ready-for-dev
+Status: done
 
 ## Story
 
@@ -23,15 +23,15 @@ This is the foundational story that enables all extraction functionality. Users 
 
 ## Tasks
 
-- [ ] **Task 1: Core extraction capability** (AC: 1)
-  - [ ] 1.1 Accept YouTube URL as input
-  - [ ] 1.2 Invoke yt-dlp to extract subtitles
-  - [ ] 1.3 Return transcript text content
+- [x] **Task 1: Core extraction capability** (AC: 1)
+  - [x] 1.1 Accept YouTube URL as input
+  - [x] 1.2 Invoke yt-dlp to extract subtitles
+  - [x] 1.3 Return transcript text content
 
-- [ ] **Task 2: Error handling** (AC: 2, 3, 4)
-  - [ ] 2.1 Detect missing subtitles and return clear message
-  - [ ] 2.2 Validate URL format before extraction
-  - [ ] 2.3 Handle network failures gracefully
+- [x] **Task 2: Error handling** (AC: 2, 3, 4)
+  - [x] 2.1 Detect missing subtitles and return clear message
+  - [x] 2.2 Validate URL format before extraction
+  - [x] 2.3 Handle network failures gracefully
 
 ## Verification
 
