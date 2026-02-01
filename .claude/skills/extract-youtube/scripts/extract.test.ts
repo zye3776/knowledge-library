@@ -1,6 +1,10 @@
-import { describe, expect, test } from "bun:test";
+import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import {
+	checkDownstreamContent,
+	countWords,
+	findLibraryEntry,
 	parseSrt,
+	parseTranscriptFrontmatter,
 	parseVtt,
 	parseYtDlpError,
 	validateYouTubeUrl,
@@ -408,5 +412,193 @@ describe("parseYtDlpError", () => {
 				expect(result.error.details).toContain("unknown error");
 			}
 		}
+	});
+});
+
+// Re-extraction functionality tests
+describe("findLibraryEntry", () => {
+	const testDir = `/tmp/test-library-${Date.now()}`;
+
+	beforeEach(async () => {
+		await Bun.$`mkdir -p ${testDir}/test-video`.quiet();
+		await Bun.write(
+			`${testDir}/test-video/transcript.md`,
+			`---
+source_url: "https://www.youtube.com/watch?v=test123456"
+source_type: youtube
+slug: "test-video"
+extracted_at: "2026-01-15T10:00:00Z"
+stage: extracted
+---
+
+# Transcript
+
+This is a test transcript.
+`,
+		);
+	});
+
+	afterEach(async () => {
+		await Bun.$`rm -rf ${testDir}`.quiet().nothrow();
+	});
+
+	test("finds existing library entry", () => {
+		const result = findLibraryEntry("test-video", testDir);
+		expect(result.ok).toBe(true);
+		if (result.ok) {
+			expect(result.data).toBe(`${testDir}/test-video`);
+		}
+	});
+
+	test("returns error for non-existent entry", () => {
+		const result = findLibraryEntry("non-existent-slug", testDir);
+		expect(result.ok).toBe(false);
+		if (!result.ok) {
+			expect(result.error.type).toBe("re_extract_error");
+			expect(result.error.message).toContain("not found");
+			expect(result.error.message).toContain("Use extract command");
+		}
+	});
+});
+
+describe("parseTranscriptFrontmatter", () => {
+	test("parses valid frontmatter", () => {
+		const content = `---
+source_url: "https://www.youtube.com/watch?v=test123456"
+source_type: youtube
+slug: "test-video"
+extracted_at: "2026-01-15T10:00:00Z"
+stage: extracted
+---
+
+# Transcript
+
+Content here.
+`;
+		const result = parseTranscriptFrontmatter(content);
+		expect(result.ok).toBe(true);
+		if (result.ok) {
+			expect(result.data.source_url).toBe(
+				"https://www.youtube.com/watch?v=test123456",
+			);
+			expect(result.data.slug).toBe("test-video");
+			expect(result.data.extracted_at).toBe("2026-01-15T10:00:00Z");
+		}
+	});
+
+	test("parses frontmatter with re_extracted_at", () => {
+		const content = `---
+source_url: "https://www.youtube.com/watch?v=test123456"
+source_type: youtube
+slug: "test-video"
+extracted_at: "2026-01-15T10:00:00Z"
+re_extracted_at: "2026-01-20T14:30:00Z"
+stage: extracted
+---
+
+# Transcript
+`;
+		const result = parseTranscriptFrontmatter(content);
+		expect(result.ok).toBe(true);
+		if (result.ok) {
+			expect(result.data.re_extracted_at).toBe("2026-01-20T14:30:00Z");
+		}
+	});
+
+	test("returns error for content without frontmatter", () => {
+		const content = "# Just a header\n\nNo frontmatter here.";
+		const result = parseTranscriptFrontmatter(content);
+		expect(result.ok).toBe(false);
+		if (!result.ok) {
+			expect(result.error.type).toBe("re_extract_error");
+			expect(result.error.message).toContain("No frontmatter");
+		}
+	});
+
+	test("returns error for missing required fields", () => {
+		const content = `---
+source_type: youtube
+stage: extracted
+---
+
+# Transcript
+`;
+		const result = parseTranscriptFrontmatter(content);
+		expect(result.ok).toBe(false);
+		if (!result.ok) {
+			expect(result.error.type).toBe("re_extract_error");
+			expect(result.error.message).toContain("missing source_url or slug");
+		}
+	});
+});
+
+describe("checkDownstreamContent", () => {
+	const testDir = `/tmp/test-downstream-${Date.now()}`;
+
+	beforeEach(async () => {
+		await Bun.$`mkdir -p ${testDir}`.quiet();
+	});
+
+	afterEach(async () => {
+		await Bun.$`rm -rf ${testDir}`.quiet().nothrow();
+	});
+
+	test("returns empty array when no downstream content exists", async () => {
+		const result = await checkDownstreamContent(testDir);
+		expect(result).toEqual([]);
+	});
+
+	test("detects refined.md", async () => {
+		await Bun.write(`${testDir}/refined.md`, "Refined content");
+		const result = await checkDownstreamContent(testDir);
+		expect(result).toContain("refined.md");
+	});
+
+	test("detects audio.mp3", async () => {
+		await Bun.write(`${testDir}/audio.mp3`, "fake audio data");
+		const result = await checkDownstreamContent(testDir);
+		expect(result).toContain("audio.mp3");
+	});
+
+	test("detects both refined.md and audio.mp3", async () => {
+		await Bun.write(`${testDir}/refined.md`, "Refined content");
+		await Bun.write(`${testDir}/audio.mp3`, "fake audio data");
+		const result = await checkDownstreamContent(testDir);
+		expect(result).toContain("refined.md");
+		expect(result).toContain("audio.mp3");
+		expect(result.length).toBe(2);
+	});
+});
+
+describe("countWords", () => {
+	test("counts words in plain content", () => {
+		const content = "This is a simple test with eight words here.";
+		const count = countWords(content);
+		expect(count).toBe(9);
+	});
+
+	test("counts words excluding frontmatter", () => {
+		const content = `---
+source_url: "https://example.com"
+slug: "test"
+---
+
+# Transcript
+
+This has five words here.
+`;
+		const count = countWords(content);
+		// Words: "#", "Transcript", "This", "has", "five", "words", "here."
+		expect(count).toBe(7);
+	});
+
+	test("handles empty content", () => {
+		const count = countWords("");
+		expect(count).toBe(0);
+	});
+
+	test("handles whitespace-only content", () => {
+		const count = countWords("   \n\n   \t   ");
+		expect(count).toBe(0);
 	});
 });

@@ -28,6 +28,7 @@ bun run build
 | Task               | Command                                              |
 | ------------------ | ---------------------------------------------------- |
 | Extract transcript | `./scripts/extract "https://youtube.com/watch?v=ID"` |
+| Re-extract content | `./scripts/extract --re-extract <slug>`              |
 | Help               | `./scripts/extract --help`                           |
 
 ## Supported URL Formats
@@ -48,6 +49,22 @@ bun run build
 | 4    | Video unavailable      |
 | 5    | yt-dlp not found       |
 | 6    | Other yt-dlp error     |
+| 7    | Re-extract error       |
+
+## Re-extract Mode
+
+Re-extract transcripts for existing library entries:
+
+```bash
+./scripts/extract --re-extract VIDEO_ID
+```
+
+**Features:**
+- Prompts for confirmation before overwriting
+- Backs up original transcript before extraction
+- Restores backup if extraction fails
+- Updates `re_extracted_at` timestamp in metadata
+- Warns about downstream content (refined.md, audio.mp3) that may be stale
 
 ## Output
 

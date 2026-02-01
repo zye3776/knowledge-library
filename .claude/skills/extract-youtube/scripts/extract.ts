@@ -8,7 +8,18 @@ type ExtractionError =
 	| { type: "network_error"; message: string }
 	| { type: "video_unavailable"; message: string }
 	| { type: "yt_dlp_not_found"; message: string }
-	| { type: "yt_dlp_error"; message: string; details: string };
+	| { type: "yt_dlp_error"; message: string; details: string }
+	| { type: "re_extract_error"; message: string };
+
+// Metadata from transcript.md frontmatter
+interface TranscriptMetadata {
+	source_url: string;
+	source_type: string;
+	slug: string;
+	extracted_at: string;
+	re_extracted_at?: string;
+	stage: string;
+}
 
 interface ExtractionResult {
 	transcript: string;
@@ -258,19 +269,342 @@ const EXIT_CODES: Record<ExtractionError["type"], number> = {
 	video_unavailable: 4,
 	yt_dlp_not_found: 5,
 	yt_dlp_error: 6,
+	re_extract_error: 7,
 };
 
-if (import.meta.main) {
-	const url = Bun.argv[2];
+// Default content folder path (can be overridden)
+const DEFAULT_CONTENT_FOLDER = "libraries";
 
-	if (!url || url === "--help" || url === "-h") {
+/**
+ * Find a library entry by slug and validate it exists
+ */
+function findLibraryEntry(
+	slug: string,
+	contentFolder: string,
+): Result<string, ExtractionError> {
+	const entryPath = `${contentFolder}/${slug}`;
+	const transcriptPath = `${entryPath}/transcript.md`;
+
+	// Use Node.js fs.existsSync for synchronous file existence check
+	const fs = require("node:fs");
+	if (!fs.existsSync(transcriptPath)) {
+		return {
+			ok: false,
+			error: {
+				type: "re_extract_error",
+				message: `Library entry '${slug}' not found.
+
+Use extract command to create it first:
+  extract "<youtube-url>"
+
+Expected location: ${transcriptPath}`,
+			},
+		};
+	}
+
+	return { ok: true, data: entryPath };
+}
+
+/**
+ * Parse YAML frontmatter from transcript.md
+ */
+function parseTranscriptFrontmatter(
+	content: string,
+): Result<TranscriptMetadata, ExtractionError> {
+	const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---/);
+	if (!frontmatterMatch) {
+		return {
+			ok: false,
+			error: {
+				type: "re_extract_error",
+				message: "No frontmatter found in transcript.md",
+			},
+		};
+	}
+
+	const yaml = frontmatterMatch[1];
+	const metadata: Partial<TranscriptMetadata> = {};
+
+	// Simple YAML parsing for known fields
+	for (const line of yaml.split("\n")) {
+		const match = line.match(/^(\w+):\s*"?([^"]*)"?$/);
+		if (match) {
+			const key = match[1] as keyof TranscriptMetadata;
+			metadata[key] = match[2];
+		}
+	}
+
+	if (!metadata.source_url || !metadata.slug) {
+		return {
+			ok: false,
+			error: {
+				type: "re_extract_error",
+				message: "Invalid frontmatter: missing source_url or slug",
+			},
+		};
+	}
+
+	return { ok: true, data: metadata as TranscriptMetadata };
+}
+
+/**
+ * Read metadata from an existing library entry
+ */
+async function readEntryMetadata(
+	entryPath: string,
+): Promise<Result<TranscriptMetadata, ExtractionError>> {
+	try {
+		const content = await Bun.file(`${entryPath}/transcript.md`).text();
+		return parseTranscriptFrontmatter(content);
+	} catch {
+		return {
+			ok: false,
+			error: {
+				type: "re_extract_error",
+				message: `Failed to read transcript at ${entryPath}/transcript.md`,
+			},
+		};
+	}
+}
+
+/**
+ * Backup the current transcript before re-extraction
+ */
+async function backupTranscript(
+	entryPath: string,
+): Promise<Result<string, ExtractionError>> {
+	const transcriptPath = `${entryPath}/transcript.md`;
+	const backupPath = `${entryPath}/transcript.md.backup`;
+
+	try {
+		const content = await Bun.file(transcriptPath).text();
+		await Bun.write(backupPath, content);
+		return { ok: true, data: backupPath };
+	} catch {
+		return {
+			ok: false,
+			error: {
+				type: "re_extract_error",
+				message: `Failed to backup transcript at ${transcriptPath}`,
+			},
+		};
+	}
+}
+
+/**
+ * Restore transcript from backup
+ */
+async function restoreTranscript(
+	backupPath: string,
+): Promise<Result<void, ExtractionError>> {
+	const transcriptPath = backupPath.replace(".backup", "");
+
+	try {
+		const content = await Bun.file(backupPath).text();
+		await Bun.write(transcriptPath, content);
+		// Delete backup after successful restore
+		await Bun.$`rm ${backupPath}`.quiet().nothrow();
+		return { ok: true, data: undefined };
+	} catch {
+		return {
+			ok: false,
+			error: {
+				type: "re_extract_error",
+				message: `Failed to restore transcript from ${backupPath}`,
+			},
+		};
+	}
+}
+
+/**
+ * Delete backup file after successful re-extraction
+ */
+async function deleteBackup(backupPath: string): Promise<void> {
+	await Bun.$`rm ${backupPath}`.quiet().nothrow();
+}
+
+/**
+ * Check for downstream content that may become stale
+ */
+async function checkDownstreamContent(entryPath: string): Promise<string[]> {
+	const downstream: string[] = [];
+
+	const refinedFile = Bun.file(`${entryPath}/refined.md`);
+	const audioFile = Bun.file(`${entryPath}/audio.mp3`);
+
+	try {
+		if ((await refinedFile.exists()) === true) {
+			downstream.push("refined.md");
+		}
+	} catch {
+		// File doesn't exist
+	}
+
+	try {
+		if ((await audioFile.exists()) === true) {
+			downstream.push("audio.mp3");
+		}
+	} catch {
+		// File doesn't exist
+	}
+
+	return downstream;
+}
+
+/**
+ * Count words in transcript content
+ */
+function countWords(content: string): number {
+	// Remove frontmatter
+	const bodyMatch = content.match(/^---[\s\S]*?---\n\n([\s\S]*)$/);
+	const body = bodyMatch ? bodyMatch[1] : content;
+	return body.split(/\s+/).filter((word) => word.length > 0).length;
+}
+
+/**
+ * Prompt user for Y/N confirmation
+ */
+async function promptConfirmation(message: string): Promise<boolean> {
+	console.log(message);
+	process.stdout.write("[Y]es / [N]o: ");
+
+	const reader = Bun.stdin.stream().getReader();
+	const decoder = new TextDecoder();
+
+	try {
+		const { value } = await reader.read();
+		if (value) {
+			const input = decoder.decode(value).trim().toLowerCase();
+			return input === "y" || input === "yes";
+		}
+		return false;
+	} finally {
+		reader.releaseLock();
+	}
+}
+
+/**
+ * Execute re-extraction for an existing library entry
+ */
+async function reExtract(
+	slug: string,
+	contentFolder: string = DEFAULT_CONTENT_FOLDER,
+): Promise<Result<{ message: string }, ExtractionError>> {
+	// Step 1: Validate library entry exists
+	const entryResult = findLibraryEntry(slug, contentFolder);
+	if (!entryResult.ok) return entryResult;
+	const entryPath = entryResult.data;
+
+	// Step 2: Read existing metadata
+	const metadataResult = await readEntryMetadata(entryPath);
+	if (!metadataResult.ok) return metadataResult;
+	const metadata = metadataResult.data;
+
+	// Step 3: Display current transcript info and prompt for confirmation
+	const transcriptContent = await Bun.file(`${entryPath}/transcript.md`).text();
+	const wordCount = countWords(transcriptContent);
+
+	console.log(`
+Re-extract transcript for "${slug}"?
+
+Current transcript:
+  - Extracted: ${metadata.extracted_at}${metadata.re_extracted_at ? `\n  - Last re-extracted: ${metadata.re_extracted_at}` : ""}
+  - Word count: ${wordCount}
+
+This will replace the existing transcript.md
+`);
+
+	const confirmed = await promptConfirmation("");
+	if (!confirmed) {
+		return {
+			ok: false,
+			error: {
+				type: "re_extract_error",
+				message: "Re-extraction cancelled by user.",
+			},
+		};
+	}
+
+	// Step 4: Backup original transcript
+	const backupResult = await backupTranscript(entryPath);
+	if (!backupResult.ok) return backupResult;
+	const backupPath = backupResult.data;
+
+	// Step 5: Perform extraction using stored URL
+	const extractResult = await extractTranscript(metadata.source_url);
+	if (!extractResult.ok) {
+		// Restore backup on failure
+		console.error("\nExtraction failed. Restoring original transcript...");
+		const restoreResult = await restoreTranscript(backupPath);
+		if (!restoreResult.ok) {
+			console.error("Warning: Failed to restore backup.");
+		} else {
+			console.log("Original transcript restored.");
+		}
+		return extractResult;
+	}
+
+	// Step 6: Write new transcript with updated metadata
+	const now = new Date().toISOString();
+	const newTranscript = `---
+source_url: "${metadata.source_url}"
+source_type: ${metadata.source_type || "youtube"}
+slug: "${metadata.slug}"
+extracted_at: "${metadata.extracted_at}"
+re_extracted_at: "${now}"
+stage: extracted
+---
+
+# Transcript
+
+${extractResult.data.transcript}
+`;
+
+	await Bun.write(`${entryPath}/transcript.md`, newTranscript);
+
+	// Step 7: Delete backup
+	await deleteBackup(backupPath);
+
+	// Step 8: Check for downstream content and warn
+	const downstream = await checkDownstreamContent(entryPath);
+	let warningMessage = "";
+	if (downstream.length > 0) {
+		warningMessage = `
+
+Warning: The following files may now be stale:
+${downstream.map((f) => `  - ${f}`).join("\n")}
+
+Consider re-processing these files with the updated transcript.`;
+		console.warn(warningMessage);
+	}
+
+	return {
+		ok: true,
+		data: {
+			message: `Transcript re-extracted successfully.
+
+Updated: ${entryPath}/transcript.md
+Re-extracted at: ${now}${warningMessage}`,
+		},
+	};
+}
+
+if (import.meta.main) {
+	const arg1 = Bun.argv[2];
+	const arg2 = Bun.argv[3];
+
+	if (!arg1 || arg1 === "--help" || arg1 === "-h") {
 		console.log(`Usage: extract <youtube-url>
+       extract --re-extract <slug>
 
 Extract transcript from a YouTube video.
 
 Examples:
   extract "https://www.youtube.com/watch?v=jNQXAC9IVRw"
   extract "https://youtu.be/jNQXAC9IVRw"
+
+Re-extract existing content:
+  extract --re-extract VIDEO_ID
 
 Exit codes:
   0 - Success
@@ -279,11 +613,32 @@ Exit codes:
   3 - Network error
   4 - Video unavailable
   5 - yt-dlp not found
-  6 - Other yt-dlp error`);
+  6 - Other yt-dlp error
+  7 - Re-extract error`);
 		process.exit(0);
 	}
 
-	const result = await extractTranscript(url);
+	// Handle --re-extract flag
+	if (arg1 === "--re-extract") {
+		if (!arg2) {
+			console.error("Error: --re-extract requires a library slug.\n");
+			console.error("Usage: extract --re-extract <slug>");
+			process.exit(EXIT_CODES.re_extract_error);
+		}
+
+		const result = await reExtract(arg2);
+
+		if (!result.ok) {
+			console.error(result.error.message);
+			process.exit(EXIT_CODES[result.error.type]);
+		}
+
+		console.log(result.data.message);
+		process.exit(0);
+	}
+
+	// Normal extraction mode
+	const result = await extractTranscript(arg1);
 
 	if (!result.ok) {
 		console.error(result.error.message);
@@ -302,5 +657,13 @@ export {
 	parseVtt,
 	parseSrt,
 	parseYtDlpError,
+	findLibraryEntry,
+	parseTranscriptFrontmatter,
+	readEntryMetadata,
+	backupTranscript,
+	restoreTranscript,
+	checkDownstreamContent,
+	countWords,
+	reExtract,
 };
-export type { Result, ExtractionError, ExtractionResult };
+export type { Result, ExtractionError, ExtractionResult, TranscriptMetadata };

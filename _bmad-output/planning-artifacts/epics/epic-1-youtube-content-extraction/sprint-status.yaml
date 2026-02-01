@@ -12,5 +12,5 @@ development_status:
   1-1-extract-youtube-transcript: done  # implementation_plan: exists
   1-2-save-with-metadata: done  # implementation_plan: exists
   1-3-interactive-extraction-workflow: done  # implementation_plan: exists
-  1-4-re-extract-existing-content: ready-for-dev  # implementation_plan: exists
+  1-4-re-extract-existing-content: done  # implementation_plan: exists
   1-5-validate-extracted-transcript: ready-for-dev  # implementation_plan: exists

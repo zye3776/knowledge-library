@@ -45,7 +45,7 @@ development_status:
   1-1-extract-youtube-transcript: done
   1-2-save-with-metadata: done
   1-3-interactive-extraction-workflow: done
-  1-4-re-extract-existing-content: ready-for-dev
+  1-4-re-extract-existing-content: done
   1-5-validate-extracted-transcript: ready-for-dev
   epic-1-retrospective: optional
 
