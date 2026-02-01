@@ -1,0 +1,13 @@
+{
+	"name": "save-content",
+	"version": "1.0.0",
+	"type": "module",
+	"scripts": {
+		"build": "bun build scripts/save.ts --compile --outfile scripts/save",
+		"test": "bun test",
+		"test:watch": "bun test --watch"
+	},
+	"devDependencies": {
+		"@types/bun": "latest"
+	}
+}
