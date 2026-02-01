@@ -4,11 +4,11 @@
 
 | # | Story | Priority | Status | Dependencies |
 |---|-------|----------|--------|--------------|
-| 1.1 | [Extract YouTube Transcript](./1-1-extract-youtube-transcript.md) | P0 | ready-for-dev | None |
-| 1.2 | [Save with Metadata](./1-2-save-with-metadata.md) | P0 | backlog | 1.1 |
-| 1.3 | [Interactive Extraction Workflow](./1-3-interactive-extraction-workflow.md) | P0 | backlog | 1.1, 1.2 |
-| 1.4 | [Re-extract Existing Content](./1-4-re-extract-existing-content.md) | P1 | backlog | 1.3 |
-| 1.5 | [Validate Extracted Transcript](./1-5-validate-extracted-transcript.md) | P1 | backlog | 1.3 |
+| 1.1 | [Extract YouTube Transcript](./1-1-extract-youtube-transcript.md) | P0 | done | None |
+| 1.2 | [Save with Metadata](./1-2-save-with-metadata.md) | P0 | ready-for-dev | 1.1 |
+| 1.3 | [Interactive Extraction Workflow](./1-3-interactive-extraction-workflow.md) | P0 | ready-for-dev | 1.1, 1.2 |
+| 1.4 | [Re-extract Existing Content](./1-4-re-extract-existing-content.md) | P1 | ready-for-dev | 1.3 |
+| 1.5 | [Validate Extracted Transcript](./1-5-validate-extracted-transcript.md) | P1 | ready-for-dev | 1.3 |
 
 ## Dependency Graph
 
