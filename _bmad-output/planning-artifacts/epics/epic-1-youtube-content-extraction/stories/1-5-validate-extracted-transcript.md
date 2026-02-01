@@ -1,6 +1,6 @@
 # Story 1.5: Validate Extracted Transcript
 
-Status: ready-for-dev
+Status: review
 
 ## Story
 
@@ -24,26 +24,26 @@ This is the tri-modal validation step (steps-v/) for the extraction workflow. Af
 
 ## Tasks
 
-- [ ] **Task 1: Validation metrics calculation** (AC: 1, 2)
-  - [ ] 1.1 Load transcript content from library item folder
-  - [ ] 1.2 Calculate word count and estimated reading time
-  - [ ] 1.3 Format and display metrics summary (user judges if sufficient)
+- [x] **Task 1: Validation metrics calculation** (AC: 1, 2)
+  - [x] 1.1 Load transcript content from library item folder
+  - [x] 1.2 Calculate word count and estimated reading time
+  - [x] 1.3 Format and display metrics summary (user judges if sufficient)
 
-- [ ] **Task 2: Artifact detection** (AC: 3)
-  - [ ] 2.1 Scan for common extraction artifacts (bracketed timestamps, speaker labels like "SPEAKER:")
-  - [ ] 2.2 Detect formatting issues (excessive line breaks, malformed characters)
-  - [ ] 2.3 Compile issues list with line numbers or excerpts (list all found, no threshold)
+- [x] **Task 2: Artifact detection** (AC: 3)
+  - [x] 2.1 Scan for common extraction artifacts (bracketed timestamps, speaker labels like "SPEAKER:")
+  - [x] 2.2 Detect formatting issues (excessive line breaks, malformed characters)
+  - [x] 2.3 Compile issues list with line numbers or excerpts (list all found, no threshold)
 
-- [ ] **Task 3: Interactive validation flow** (AC: 4)
-  - [ ] 3.1 Display validation results summary
-  - [ ] 3.2 Present A/R/X menu options
-  - [ ] 3.3 Handle user selection and route appropriately
-  - [ ] 3.4 Never auto-advance without user approval
+- [x] **Task 3: Interactive validation flow** (AC: 4)
+  - [x] 3.1 Display validation results summary
+  - [x] 3.2 Present A/R/X menu options
+  - [x] 3.3 Handle user selection and route appropriately
+  - [x] 3.4 Never auto-advance without user approval
 
-- [ ] **Task 4: Metadata update on approval** (AC: 5)
-  - [ ] 4.1 Load existing metadata.yaml for library item
-  - [ ] 4.2 Add validation_passed boolean and validation_date ISO timestamp
-  - [ ] 4.3 Save metadata directly (simple write for personal tool)
+- [x] **Task 4: Metadata update on approval** (AC: 5)
+  - [x] 4.1 Load existing metadata.yaml for library item
+  - [x] 4.2 Add validation_passed boolean and validation_date ISO timestamp
+  - [x] 4.3 Save metadata directly (simple write for personal tool)
 
 ## Dev Notes
 
@@ -143,8 +143,38 @@ grep "validation_date:" libraries/test-slug/metadata.yaml
 
 ### Agent Model Used
 
+Claude Opus 4.5 (claude-opus-4-5@20251101)
+
 ### Debug Log References
+
+- No errors encountered during implementation
 
 ### Completion Notes List
 
+1. Created validation step file `step-01-validate.md` in `steps-v/` folder for tri-modal workflow support
+2. Step file implements all validation logic:
+   - Resolves library item from context or user input
+   - Loads transcript.md content with error handling
+   - Calculates word count and reading time metrics
+   - Scans for extraction artifacts using regex patterns (timestamps, speaker labels, [Music], [Applause], encoding issues)
+   - Displays results in formatted table without judgment (user decides if acceptable)
+   - Presents A/R/X menu and waits for user selection
+   - Updates metadata.yaml with validation_passed and validation_date on approval
+3. Updated main workflow.md to support validate mode with `--validate` flag
+4. No TypeScript code or tests required - this is a workflow step file per story Dev Notes (NFR9)
+5. Linting passes with no issues
+
+### Implementation Decisions
+
+- **Location:** Used `.claude/commands/extract/steps-v/` instead of `.claude/skills/knowledge-library/workflows/extract-youtube/steps-v/` per actual project structure (knowledge-library skill folder doesn't exist; extract is a command workflow)
+- **Validation philosophy:** Report facts only, let user judge - no system-imposed thresholds
+- **Error handling:** R/X menu on errors, create metadata.yaml if missing on approval
+
 ### File List
+
+- `.claude/commands/extract/steps-v/step-01-validate.md` (created)
+- `.claude/commands/extract/workflow.md` (modified)
+
+## Change Log
+
+- 2026-02-01: Implemented validation step (step-01-validate.md) with metrics calculation, artifact detection, A/R/X menu, and metadata update on approval

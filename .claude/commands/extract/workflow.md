@@ -3,11 +3,23 @@ name: extract
 description: "Interactive YouTube transcript extraction workflow"
 stepsCompleted: []
 currentStep: null
+modes:
+  - create: steps/       # Default: Extract new transcript
+  - validate: steps-v/   # Validate existing transcript
 ---
 
 # Extract YouTube Transcript
 
 Interactive workflow for extracting transcripts from YouTube videos and saving them to the knowledge library.
+
+## Workflow Modes
+
+This workflow supports multiple modes:
+
+- **Create Mode** (default): Extract a new transcript from YouTube
+- **Validate Mode**: Validate an existing transcript for quality
+
+To run in validate mode, invoke with: `/extract --validate [slug]`
 
 <mandatory_execution_rules>
 ## MANDATORY EXECUTION RULES
@@ -47,5 +59,13 @@ This workflow guides you through:
 ## Start Workflow
 
 <start>
+**Create Mode (default):**
 Begin by loading and executing: `steps/step-01-init.md`
+
+**Validate Mode:**
+Begin by loading and executing: `steps-v/step-01-validate.md`
+
+Mode is determined by invocation:
+- `/extract` or `/extract <url>` - Create mode
+- `/extract --validate` or `/extract --validate <slug>` - Validate mode
 </start>
