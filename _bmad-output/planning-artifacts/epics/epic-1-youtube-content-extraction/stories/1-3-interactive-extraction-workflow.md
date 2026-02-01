@@ -1,6 +1,6 @@
 # Story 1.3: Interactive Extraction Workflow
 
-Status: ready-for-dev
+Status: review
 
 ## Story
 
@@ -24,26 +24,26 @@ With the core extraction skill (1.1) and metadata saving capability (1.2) comple
 
 ## Tasks
 
-- [ ] **Task 1: Create workflow structure** (AC: 1)
-  - [ ] 1.1 Create workflow.md entry point with MANDATORY EXECUTION RULES
-  - [ ] 1.2 Create steps/ folder with step-01-init.md (URL input)
-  - [ ] 1.3 Create step-02-extract.md (invoke extract-youtube skill)
+- [x] **Task 1: Create workflow structure** (AC: 1)
+  - [x] 1.1 Create workflow.md entry point with MANDATORY EXECUTION RULES
+  - [x] 1.2 Create steps/ folder with step-01-init.md (URL input)
+  - [x] 1.3 Create step-02-extract.md (invoke extract-youtube skill)
 
-- [ ] **Task 2: Implement A/C menu flow** (AC: 2, 5)
-  - [ ] 2.1 Create step-03-review.md (display preview, present menu)
-  - [ ] 2.2 Implement [A]pprove branch (proceed to save)
-  - [ ] 2.3 Implement [C]ancel branch (exit without saving)
+- [x] **Task 2: Implement A/C menu flow** (AC: 2, 5)
+  - [x] 2.1 Create step-03-review.md (display preview, present menu)
+  - [x] 2.2 Implement [A]pprove branch (proceed to save)
+  - [x] 2.3 Implement [C]ancel branch (exit without saving)
 
-- [ ] **Task 3: Implement save flow** (AC: 3)
-  - [ ] 3.1 Create step-04-save.md (invoke metadata save from 1.2)
-  - [ ] 3.2 Generate slug from video title
-  - [ ] 3.3 Create content library folder structure
-  - [ ] 3.4 Display completion confirmation
+- [x] **Task 3: Implement save flow** (AC: 3)
+  - [x] 3.1 Create step-04-save.md (invoke metadata save from 1.2)
+  - [x] 3.2 Generate slug from video title
+  - [x] 3.3 Create content library folder structure
+  - [x] 3.4 Display completion confirmation
 
-- [ ] **Task 4: Error handling flow** (AC: 4)
-  - [ ] 4.1 Handle extraction failures with clear messaging
-  - [ ] 4.2 Present error menu: [R]etry, [X]Exit
-  - [ ] 4.3 Log errors to workflow state for debugging
+- [x] **Task 4: Error handling flow** (AC: 4)
+  - [x] 4.1 Handle extraction failures with clear messaging
+  - [x] 4.2 Present error menu: [R]etry, [X]Exit
+  - [x] 4.3 Log errors to workflow state for debugging
 
 ## Verification
 
@@ -100,6 +100,62 @@ ls libraries/ | wc -l
 - Invokes `extract-youtube` skill (Story 1.1) for transcript extraction
 - Uses metadata save capability (Story 1.2) for library persistence
 - Follows project-context.md error handling conventions
+
+## Dev Agent Record
+
+### Implementation Plan
+
+Created a BMAD step-file workflow at `.claude/commands/extract/` following the implementation plan. The workflow consists of:
+
+1. **workflow.md** - Entry point with MANDATORY EXECUTION RULES that govern step execution
+2. **step-01-init.md** - Validates prerequisites (extract skill exists, libraries folder) and prompts for YouTube URL
+3. **step-02-extract.md** - Invokes the extract-youtube skill and handles exit codes with R/N/X error menu
+4. **step-03-review.md** - Displays transcript preview and presents A/C approval menu (BLOCKING step)
+5. **step-04-save.md** - Generates slug from video ID, creates library folder, saves transcript.md with YAML frontmatter
+
+### Key Decisions
+
+- Used video ID as slug for simplicity (e.g., `jNQXAC9IVRw`)
+- Single metadata location in transcript.md frontmatter (no separate metadata.yaml) per KISS principle
+- Added [N]ew URL option in error menu for better UX
+- All menus use bracketed notation per BMAD patterns: [A], [C], [R], [N], [X]
+
+### Debug Log
+
+- 2026-02-01: Implementation started
+- 2026-02-01: All files created successfully
+- 2026-02-01: File existence verification passed (workflow.md PASS, steps/ PASS)
+- 2026-02-01: Biome lint passed with no issues
+
+### Completion Notes
+
+All acceptance criteria satisfied:
+- AC1: workflow.md and step-01-init.md guide users with clear prompts
+- AC2: step-03-review.md displays preview and presents A/C menu
+- AC3: step-04-save.md saves transcript with metadata to libraries/{slug}/
+- AC4: step-02-extract.md handles errors with R/N/X menu
+- AC5: step-03-review.md [C]ancel exits cleanly without saving
+
+## File List
+
+### New Files
+
+- `.claude/commands/extract/workflow.md` - Workflow entry point with MANDATORY EXECUTION RULES
+- `.claude/commands/extract/steps/step-01-init.md` - URL input and validation step
+- `.claude/commands/extract/steps/step-02-extract.md` - Extraction invocation step
+- `.claude/commands/extract/steps/step-03-review.md` - Preview and A/C menu step
+- `.claude/commands/extract/steps/step-04-save.md` - Save to library step
+
+### Modified Files
+
+- `_bmad-output/implementation-artifacts/sprint-status.yaml` - Updated story status to in-progress
+
+## Change Log
+
+- 2026-02-01: Created interactive extraction workflow with 4-step architecture (workflow.md + step-01 through step-04)
+- 2026-02-01: Implemented A/C menu flow for user approval
+- 2026-02-01: Implemented error handling with R/N/X menu options
+- 2026-02-01: Story implementation complete - ready for review
 
 ## References
 
