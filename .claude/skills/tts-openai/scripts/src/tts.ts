@@ -5,9 +5,9 @@
  * Framework-agnostic - can be used with any CLI or application framework.
  */
 
-import { mkdir } from "fs/promises";
+import { mkdir } from "node:fs/promises";
+import { join } from "node:path";
 import OpenAI from "openai";
-import { join } from "path";
 import type { Voice } from "./types";
 
 /**

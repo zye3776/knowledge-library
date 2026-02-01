@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test";
-import { mkdir, rm } from "fs/promises";
-import { tmpdir } from "os";
-import { join } from "path";
+import { mkdir, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { getPlaybackStatus, stopPlayback } from "./playback";
 import { savePlaybackState } from "./state";
 

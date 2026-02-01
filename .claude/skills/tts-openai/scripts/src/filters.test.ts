@@ -45,7 +45,7 @@ describe("TEXT_FILTERS", () => {
 	});
 
 	describe("emphasis", () => {
-		const filter = TEXT_FILTERS["emphasis"];
+		const filter = TEXT_FILTERS.emphasis;
 
 		test("removes bold markers", () => {
 			expect(filter("this is **bold** text")).toBe("this is bold text");
@@ -65,7 +65,7 @@ describe("TEXT_FILTERS", () => {
 	});
 
 	describe("headers", () => {
-		const filter = TEXT_FILTERS["headers"];
+		const filter = TEXT_FILTERS.headers;
 
 		test("removes h1 markers", () => {
 			expect(filter("# Heading")).toBe("Heading");
@@ -89,7 +89,7 @@ describe("TEXT_FILTERS", () => {
 	});
 
 	describe("hr", () => {
-		const filter = TEXT_FILTERS["hr"];
+		const filter = TEXT_FILTERS.hr;
 
 		test("removes dash horizontal rules", () => {
 			expect(filter("above\n---\nbelow")).toBe("above\n\nbelow");
@@ -109,7 +109,7 @@ describe("TEXT_FILTERS", () => {
 	});
 
 	describe("images", () => {
-		const filter = TEXT_FILTERS["images"];
+		const filter = TEXT_FILTERS.images;
 
 		test("removes image syntax keeping alt text", () => {
 			expect(filter("![alt text](image.png)")).toBe("alt text");
@@ -125,7 +125,7 @@ describe("TEXT_FILTERS", () => {
 	});
 
 	describe("whitespace", () => {
-		const filter = TEXT_FILTERS["whitespace"];
+		const filter = TEXT_FILTERS.whitespace;
 
 		test("collapses multiple newlines", () => {
 			expect(filter("a\n\n\n\nb")).toBe("a\n\nb");
@@ -187,7 +187,9 @@ describe("getAvailableFilters", () => {
 	test("returns array of strings", () => {
 		const filters = getAvailableFilters();
 		expect(Array.isArray(filters)).toBe(true);
-		filters.forEach((f) => expect(typeof f).toBe("string"));
+		for (const f of filters) {
+			expect(typeof f).toBe("string");
+		}
 	});
 });
 

@@ -5,7 +5,7 @@
  * after interruption.
  */
 
-import { join } from "path";
+import { join } from "node:path";
 import type { ParagraphsMeta, PlaybackState } from "./types";
 
 const PLAYBACK_FILE = "playback.json";

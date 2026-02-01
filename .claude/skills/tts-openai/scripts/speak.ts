@@ -1,14 +1,15 @@
 #!/usr/bin/env bun
+
 /**
  * OpenAI TTS CLI - Command-line interface for text-to-speech
  *
  * This file handles CLI parsing only. All functionality is in src/
  */
 
+import { unlink } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { Command } from "commander";
-import { unlink } from "fs/promises";
-import { tmpdir } from "os";
-import { join } from "path";
 
 import {
 	applyFilters,
@@ -204,7 +205,7 @@ program
 						process.exit(1);
 					}
 					const rate = parseFloat(options.rate);
-					if (isNaN(rate) || rate < MIN_RATE || rate > MAX_RATE) {
+					if (Number.isNaN(rate) || rate < MIN_RATE || rate > MAX_RATE) {
 						console.error(
 							`Error: Invalid rate '${options.rate}'. Must be between ${MIN_RATE} and ${MAX_RATE}`,
 						);
@@ -265,7 +266,7 @@ program
 
 				// Validate and parse playback rate
 				const rate = parseFloat(options.rate);
-				if (isNaN(rate) || rate < MIN_RATE || rate > MAX_RATE) {
+				if (Number.isNaN(rate) || rate < MIN_RATE || rate > MAX_RATE) {
 					console.error(
 						`Error: Invalid rate '${options.rate}'. Must be between ${MIN_RATE} and ${MAX_RATE}`,
 					);

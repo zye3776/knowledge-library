@@ -1,8 +1,8 @@
 import { afterEach, beforeEach, describe, expect, mock, test } from "bun:test";
-import { mkdir, rm } from "fs/promises";
+import { mkdir, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import type OpenAI from "openai";
-import { tmpdir } from "os";
-import { join } from "path";
 import {
 	createClient,
 	generateParagraphsAudio,
@@ -208,7 +208,7 @@ describe("generateParagraphsAudio", () => {
 		const paragraphsDir = join(testDir, "paragraphs");
 		const _file = Bun.file(paragraphsDir);
 		// Check directory exists by trying to list it
-		const { readdir } = await import("fs/promises");
+		const { readdir } = await import("node:fs/promises");
 		const files = await readdir(paragraphsDir);
 		expect(files.length).toBe(2);
 	});

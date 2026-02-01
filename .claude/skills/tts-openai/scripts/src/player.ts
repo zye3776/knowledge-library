@@ -7,7 +7,7 @@
  * - Windows: powershell, wmplayer
  */
 
-import { execSync, spawn } from "child_process";
+import { execSync, spawn } from "node:child_process";
 import { FALLBACK_DURATION_SECONDS } from "./constants";
 import type { AudioPlayer } from "./types";
 

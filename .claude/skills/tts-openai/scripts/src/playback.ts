@@ -5,8 +5,8 @@
  * state persistence, and resumability.
  */
 
-import { mkdir, readdir } from "fs/promises";
-import { join } from "path";
+import { mkdir, readdir } from "node:fs/promises";
+import { join } from "node:path";
 import { getPlayer } from "./player";
 import {
 	loadPlaybackState,
