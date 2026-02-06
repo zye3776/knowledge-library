@@ -9,6 +9,6 @@ story_location: _bmad-output/planning-artifacts/epics/epic-2-audio-consumption/s
 
 development_status:
   epic-2: backlog
-  2-1-convert-text-to-audio: backlog
-  2-2-configure-voice-preferences: backlog
-  2-3-chunked-audio-long-content: backlog
+  2-1-convert-text-to-audio: ready-for-dev  # implementation_plan: exists
+  2-2-configure-voice-preferences: ready-for-dev  # implementation_plan: exists
+  2-3-chunked-audio-long-content: ready-for-dev  # implementation_plan: exists
