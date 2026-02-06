@@ -72,9 +72,9 @@ development_status:
   epic-4-retrospective: optional
 
   # Epic 5: Module Foundation & Configuration
-  epic-5: backlog
-  5-1-initialize-project-config: ready-for-dev
-  5-2-configure-output-directories: ready-for-dev
-  5-3-configure-processing-rules: ready-for-dev
-  5-4-simple-command-invocation: ready-for-dev
+  epic-5: done
+  5-1-initialize-project-config: done
+  5-2-configure-output-directories: done
+  5-3-configure-processing-rules: done
+  5-4-simple-command-invocation: done
   epic-5-retrospective: optional

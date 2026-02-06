@@ -1,6 +1,6 @@
 # Story 5.1: Initialize Project Configuration
 
-Status: ready
+Status: done
 
 ## Story
 
@@ -24,22 +24,22 @@ The knowledge-library is a BMAD module that needs project-specific configuration
 
 ## Tasks
 
-- [ ] **Task 1: Config file generation** (AC: 1, 5)
-  - [ ] 1.1 Create config.yaml template with all options
-  - [ ] 1.2 Populate with sensible defaults
-  - [ ] 1.3 Add inline comments explaining each option
-  - [ ] 1.4 Check for existing config and prompt user
+- [x] **Task 1: Config file generation** (AC: 1, 5)
+  - [x] 1.1 Create config.yaml template with all options
+  - [x] 1.2 Populate with sensible defaults
+  - [x] 1.3 Add inline comments explaining each option
+  - [x] 1.4 Check for existing config and prompt user
 
-- [ ] **Task 2: Directory structure** (AC: 2)
-  - [ ] 2.1 Create libraries/ directory
-  - [ ] 2.2 Create any other required directories
-  - [ ] 2.3 Handle existing directories gracefully
+- [x] **Task 2: Directory structure** (AC: 2)
+  - [x] 2.1 Create libraries/ directory
+  - [x] 2.2 Create any other required directories
+  - [x] 2.3 Handle existing directories gracefully
 
-- [ ] **Task 3: Dependency validation** (AC: 3, 4)
-  - [ ] 3.1 Check if yt-dlp is installed and accessible
-  - [ ] 3.2 Check if OPENAI_API_KEY environment variable is set
-  - [ ] 3.3 Display status for each dependency
-  - [ ] 3.4 Provide installation/configuration instructions for missing deps
+- [x] **Task 3: Dependency validation** (AC: 3, 4)
+  - [x] 3.1 Check if yt-dlp is installed and accessible
+  - [x] 3.2 Check if OPENAI_API_KEY environment variable is set
+  - [x] 3.3 Display status for each dependency
+  - [x] 3.4 Provide installation/configuration instructions for missing deps
 
 ## Technical Notes
 
@@ -130,6 +130,23 @@ test -n "$OPENAI_API_KEY" && echo "PASS: OPENAI_API_KEY set"
 ## Dependencies
 
 - None (this is foundation)
+
+## Technical Implementation Notes
+
+<technical_implementation_notes>
+**Implemented:** 2026-02-06
+
+**Architecture:** Init flow integrated into `.claude/skills/kl/SKILL.md` as the `init` command. Creates config.yaml with documented defaults, creates libraries/ directory, and validates dependencies.
+
+**Key Decisions:**
+- Config template includes tts, processing, and output sections with inline comments
+- Dependencies (yt-dlp, OPENAI_API_KEY, ffmpeg) are warnings, not blockers
+- Existing config handled with Keep/Reset/Cancel prompt
+- YAML format with human-readable comments
+
+**KISS Compliance:** Single skill with init subcommand, no separate init tool
+**Files Created:** `.claude/skills/kl/SKILL.md`
+</technical_implementation_notes>
 
 ## References
 

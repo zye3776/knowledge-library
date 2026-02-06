@@ -1,6 +1,6 @@
 # Story 5.2: Configure Output Directories
 
-Status: ready
+Status: done
 
 ## Story
 
@@ -24,21 +24,21 @@ Users may want to store their knowledge library in different locations - perhaps
 
 ## Tasks
 
-- [ ] **Task 1: Path resolution logic** (AC: 2, 3)
-  - [ ] 1.1 Detect if path is relative or absolute
-  - [ ] 1.2 Resolve relative paths from project root
-  - [ ] 1.3 Normalize paths across platforms
+- [x] **Task 1: Path resolution logic** (AC: 2, 3)
+  - [x] 1.1 Detect if path is relative or absolute
+  - [x] 1.2 Resolve relative paths from project root
+  - [x] 1.3 Normalize paths across platforms
 
-- [ ] **Task 2: Directory validation** (AC: 4, 5)
-  - [ ] 2.1 Check if directory exists
-  - [ ] 2.2 Create directory if missing
-  - [ ] 2.3 Verify write permissions
-  - [ ] 2.4 Report clear errors if validation fails
+- [x] **Task 2: Directory validation** (AC: 4, 5)
+  - [x] 2.1 Check if directory exists
+  - [x] 2.2 Create directory if missing
+  - [x] 2.3 Verify write permissions
+  - [x] 2.4 Report clear errors if validation fails
 
-- [ ] **Task 3: Config reading** (AC: 1)
-  - [ ] 3.1 Read output.libraries from config.yaml
-  - [ ] 3.2 Fall back to default if not specified
-  - [ ] 3.3 Apply resolved path to all file operations
+- [x] **Task 3: Config reading** (AC: 1)
+  - [x] 3.1 Read output.libraries from config.yaml
+  - [x] 3.2 Fall back to default if not specified
+  - [x] 3.3 Apply resolved path to all file operations
 
 ## Technical Notes
 
@@ -115,6 +115,24 @@ test -d ./new-library && echo "PASS: Directory created"
 ## Dependencies
 
 - Requires Story 5.1 (config.yaml exists)
+
+## Technical Implementation Notes
+
+<technical_implementation_notes>
+**Implemented:** 2026-02-06
+
+**Architecture:** Path resolution integrated into kl init flow (Step I-3). Supports relative, absolute, and home-relative paths.
+
+**Key Decisions:**
+- Path resolution at init time, not per-operation
+- Auto-create missing directories (reduce friction)
+- Relative paths resolved from project root
+- Absolute paths used as-is
+- Home-relative (~/) expanded to home directory
+
+**KISS Compliance:** Path resolution in init step, no separate config tool
+**Files Modified:** `.claude/skills/kl/SKILL.md` (Init Flow Step I-3)
+</technical_implementation_notes>
 
 ## References
 

@@ -1,6 +1,6 @@
 # Story 5.4: Simple Command Invocation
 
-Status: ready
+Status: done
 
 ## Story
 
@@ -24,20 +24,20 @@ The knowledge-library is a BMAD module accessed through Claude Code. This story 
 
 ## Tasks
 
-- [ ] **Task 1: Command registration** (AC: 1)
-  - [ ] 1.1 Create /knowledge-library skill entry point
-  - [ ] 1.2 Create /kl alias for quick access
-  - [ ] 1.3 Register in BMAD module manifest
+- [x] **Task 1: Command registration** (AC: 1)
+  - [x] 1.1 Create /knowledge-library skill entry point
+  - [x] 1.2 Create /kl alias for quick access
+  - [x] 1.3 Register in BMAD module manifest
 
-- [ ] **Task 2: Main menu** (AC: 2, 5)
-  - [ ] 2.1 Design main menu with core options
-  - [ ] 2.2 Implement option selection handling
-  - [ ] 2.3 Add help option with feature explanations
+- [x] **Task 2: Main menu** (AC: 2, 5)
+  - [x] 2.1 Design main menu with core options
+  - [x] 2.2 Implement option selection handling
+  - [x] 2.3 Add help option with feature explanations
 
-- [ ] **Task 3: Prerequisites check** (AC: 3, 4)
-  - [ ] 3.1 Check for config.yaml existence
-  - [ ] 3.2 Validate dependencies before showing menu
-  - [ ] 3.3 Guide to initialization if needed
+- [x] **Task 3: Prerequisites check** (AC: 3, 4)
+  - [x] 3.1 Check for config.yaml existence
+  - [x] 3.2 Validate dependencies before showing menu
+  - [x] 3.3 Guide to initialization if needed
 
 ## Technical Notes
 
@@ -140,6 +140,24 @@ unset OPENAI_API_KEY
 ## Dependencies
 
 - Requires Story 5.1 (initialization capability exists)
+
+## Technical Implementation Notes
+
+<technical_implementation_notes>
+**Implemented:** 2026-02-06
+
+**Architecture:** `.claude/skills/kl/SKILL.md` serves as the main entry point with /kl command. Routes to existing skills via main menu.
+
+**Key Decisions:**
+- Main menu: New, Browse, Pipeline, Refine, Consume, Settings, Help, Exit
+- Prerequisites check at menu start (config.yaml must exist)
+- Settings view displays config.yaml contents
+- Help flow documents all commands and features
+- Routes to existing skills: /pipeline, /library, /refine, /consume
+
+**KISS Compliance:** Single skill file, flat menu, no CLI flags
+**Files Created:** `.claude/skills/kl/SKILL.md`
+</technical_implementation_notes>
 
 ## References
 
