@@ -7,7 +7,7 @@ description: Convert library content to audio via TTS for screen-free consumptio
 
 Convert a library item's transcript to audio using OpenAI TTS.
 
-**Usage:** `/consume {slug}`
+**Usage:** `/consume {slug} [-v voice]`
 
 ## When to Use
 
@@ -31,15 +31,24 @@ bun run build
 
 <instructions>
 
-### Step 1: Validate Input
+### Step 1: Parse Arguments
 
-1. The user provides `{slug}` as an argument
-2. If no slug provided, list available library items from `libraries/` and report error:
+1. The user provides `{slug}` as a positional argument
+2. Optional: `-v {voice}` to select a TTS voice (default: `nova`)
+3. If no slug provided, list available library items from `libraries/` and report error:
    ```
    Error: No slug provided.
-   Usage: /consume {slug}
+   Usage: /consume {slug} [-v voice]
    Available items: {list directory names in libraries/}
    ```
+4. If `-v {voice}` is provided, validate against the allowed voices:
+   `alloy`, `echo`, `fable`, `nova`, `onyx`, `shimmer`
+5. If the voice is invalid, report error and stop:
+   ```
+   Error: Invalid voice '{voice}'.
+   Valid voices: alloy, echo, fable, nova, onyx, shimmer
+   ```
+6. If no `-v` argument, default to `nova`
 
 ### Step 2: Check API Key
 
@@ -80,9 +89,9 @@ bun run build
 
 ### Step 5: Generate Audio
 
-1. Run the tts-openai skill:
+1. Run the tts-openai skill with the selected voice:
    ```bash
-   .claude/skills/tts-openai/scripts/speak -v nova -f libraries/{slug}/{content_file} -o libraries/{slug}/audio.mp3
+   .claude/skills/tts-openai/scripts/speak -v {voice} -f libraries/{slug}/{content_file} -o libraries/{slug}/audio.mp3
    ```
 2. If the command fails, report the error and stop
 3. Verify `libraries/{slug}/audio.mp3` was created
@@ -94,7 +103,7 @@ bun run build
    - `stage: consumed`
    - `audio_generated_at: "{ISO 8601 timestamp}"` (e.g., `"2026-02-06T10:30:00.000Z"`)
    - `audio_file: audio.mp3`
-   - `tts_voice: nova`
+   - `tts_voice: {voice}` (the voice used, e.g., `nova`, `echo`, etc.)
 3. Write back the updated metadata.yaml, preserving existing fields
 
 ### Step 7: Report Success
@@ -104,7 +113,7 @@ Output a summary:
 Audio generated successfully.
   Source: libraries/{slug}/{content_file}
   Output: libraries/{slug}/audio.mp3
-  Voice: nova
+  Voice: {voice}
   Metadata updated: stage → consumed
 ```
 
@@ -115,22 +124,37 @@ Audio generated successfully.
 | Condition | Action |
 |-----------|--------|
 | No slug argument | List available items, report error |
+| Invalid voice name | List valid voices, report error |
 | OPENAI_API_KEY not set | Show setup instructions |
 | Library item not found | Report missing directory |
 | No content file | Report expected files |
 | TTS generation fails | Report error from tts-openai |
 | audio.mp3 exists | Warn and overwrite |
 
-## Example
+## Voices
+
+| Voice   | Description                |
+|---------|----------------------------|
+| alloy   | Neutral, balanced          |
+| echo    | Warm, conversational       |
+| fable   | Expressive, British accent |
+| nova    | Friendly, natural (default)|
+| onyx    | Deep, authoritative        |
+| shimmer | Soft, gentle               |
+
+## Examples
 
 ```bash
-# Convert a library item to audio
+# Convert with default voice (nova)
 /consume best-to-do-list-apps-for-2026
+
+# Convert with a specific voice
+/consume best-to-do-list-apps-for-2026 -v echo
 
 # Output:
 # Audio generated successfully.
 #   Source: libraries/best-to-do-list-apps-for-2026/transcript.md
 #   Output: libraries/best-to-do-list-apps-for-2026/audio.mp3
-#   Voice: nova
+#   Voice: echo
 #   Metadata updated: stage → consumed
 ```

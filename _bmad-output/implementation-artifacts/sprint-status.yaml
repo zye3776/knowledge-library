@@ -52,7 +52,7 @@ development_status:
   # Epic 2: Audio Consumption
   epic-2: in-progress
   2-1-convert-text-to-audio: done
-  2-2-configure-voice-preferences: ready-for-dev
+  2-2-configure-voice-preferences: done
   2-3-chunked-audio-long-content: ready-for-dev
   epic-2-retrospective: optional
 

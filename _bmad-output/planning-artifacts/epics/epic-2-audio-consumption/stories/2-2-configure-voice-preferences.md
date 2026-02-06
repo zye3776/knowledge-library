@@ -1,6 +1,6 @@
 # Story 2.2: Configure Voice Preferences
 
-Status: backlog
+Status: done
 
 ## Story
 
@@ -24,15 +24,15 @@ The tts-openai skill supports 6 voices (alloy, echo, fable, nova, onyx, shimmer)
 
 ## Tasks
 
-- [ ] **Task 1: Add voice argument to consume skill** (AC: 1, 2)
-  - [ ] 1.1 Accept optional `-v {voice}` argument in consume skill
-  - [ ] 1.2 Default to `nova` if not specified
-  - [ ] 1.3 Pass voice to tts-openai: `.claude/skills/tts-openai/scripts/speak -v {voice} -f ...`
-  - [ ] 1.4 Record voice used in metadata.yaml
+- [x] **Task 1: Add voice argument to consume skill** (AC: 1, 2)
+  - [x] 1.1 Accept optional `-v {voice}` argument in consume skill
+  - [x] 1.2 Default to `nova` if not specified
+  - [x] 1.3 Pass voice to tts-openai: `.claude/skills/tts-openai/scripts/speak -v {voice} -f ...`
+  - [x] 1.4 Record voice used in metadata.yaml
 
-- [ ] **Task 2: Voice validation** (AC: 3)
-  - [ ] 2.1 Validate voice against: alloy, echo, fable, nova, onyx, shimmer
-  - [ ] 2.2 On invalid voice, error with: "Invalid voice '{voice}'. Valid options: alloy, echo, fable, nova, onyx, shimmer"
+- [x] **Task 2: Voice validation** (AC: 3)
+  - [x] 2.1 Validate voice against: alloy, echo, fable, nova, onyx, shimmer
+  - [x] 2.2 On invalid voice, error with: "Invalid voice '{voice}'. Valid options: alloy, echo, fable, nova, onyx, shimmer"
 
 ## Technical Notes
 
@@ -97,6 +97,27 @@ test -f /tmp/test.mp3 && echo "PASS"
 
 - Story 2.1 must be complete (consume skill exists)
 - tts-openai skill supports `-v` flag
+
+## Technical Implementation Notes
+
+<technical_implementation_notes>
+**Implemented:** 2026-02-06
+
+**Architecture:** Modified existing consume SKILL.md to add voice selection. No new files created.
+
+**Key Decisions:**
+- Voice argument added as `-v {voice}` matching tts-openai CLI pattern
+- Validation lists all 6 valid voices in error message for discoverability
+- Voice recorded in metadata.yaml as `tts_voice: {voice}` for audit trail
+- Added Voices reference table to SKILL.md for quick lookup
+
+**KISS Compliance:**
+- No config file, no persistence of preferences
+- CLI argument only: `/consume slug -v echo`
+- Inline validation, no separate validation module
+
+**Files Modified:** `.claude/skills/consume/SKILL.md`
+</technical_implementation_notes>
 
 ## References
 
