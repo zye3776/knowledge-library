@@ -57,11 +57,11 @@ development_status:
   epic-2-retrospective: optional
 
   # Epic 3: Content Refinement
-  epic-3: backlog
-  3-1-remove-sponsor-segments: ready-for-dev
-  3-2-remove-visual-references: ready-for-dev
-  3-3-remove-ad-content: ready-for-dev
-  3-4-review-refined-content: ready-for-dev
+  epic-3: done
+  3-1-remove-sponsor-segments: done
+  3-2-remove-visual-references: done
+  3-3-remove-ad-content: done
+  3-4-review-refined-content: done
   epic-3-retrospective: optional
 
   # Epic 4: Pipeline Orchestration

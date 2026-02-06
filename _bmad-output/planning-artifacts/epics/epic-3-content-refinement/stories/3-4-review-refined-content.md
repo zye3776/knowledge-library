@@ -1,6 +1,6 @@
 # Story 3.4: Review Refined Content
 
-Status: ready
+Status: done
 
 ## Story
 
@@ -26,17 +26,17 @@ This is the final step in the refinement workflow and gates progression to Epic 
 
 ## Tasks
 
-- [ ] **Task 1: Summary display** (AC: 1)
-  - [ ] 1.1 Parse refinement output (stats + examples from unified prompt)
-  - [ ] 1.2 Display counts and one example per removal type
-  - [ ] 1.3 Show word count reduction percentage
+- [x] **Task 1: Summary display** (AC: 1)
+  - [x] 1.1 Parse refinement output (stats + examples from unified prompt)
+  - [x] 1.2 Display counts and one example per removal type
+  - [x] 1.3 Show word count reduction percentage
 
-- [ ] **Task 2: Review menu** (AC: 2, 3, 4, 5)
-  - [ ] 2.1 Present menu: [A]pprove / [R]eject / [V]iew / [E]dit
-  - [ ] 2.2 [A]pprove: Update metadata `stage: refined`, `refinement_approved_at`
-  - [ ] 2.3 [R]eject: Update metadata `stage: refinement_skipped`, `use_original: true`
-  - [ ] 2.4 [V]iew: Display full refined.md content
-  - [ ] 2.5 [E]dit: Open refined.md for manual editing, return to menu
+- [x] **Task 2: Review menu** (AC: 2, 3, 4, 5)
+  - [x] 2.1 Present menu: [A]pprove / [R]eject / [V]iew / [E]dit
+  - [x] 2.2 [A]pprove: Update metadata `stage: refined`, `refinement_approved_at`
+  - [x] 2.3 [R]eject: Update metadata `stage: refinement_skipped`, `use_original: true`
+  - [x] 2.4 [V]iew: Display full refined.md content
+  - [x] 2.5 [E]dit: Open refined.md for manual editing, return to menu
 
 **KISS Note:** No toggle-based restoration. No iteration tracking. No re-refinement. Approve, reject, or edit manually.
 
@@ -124,11 +124,11 @@ yq '.use_original' libraries/*/metadata.yaml  # Expected: true
 ```
 
 ### Manual Verification
-- [ ] AC1: Summary displays with counts AND one example per type
-- [ ] AC2: [V]iew shows full refined content
-- [ ] AC3: [A]pprove updates metadata correctly
-- [ ] AC4: [R]eject sets use_original: true
-- [ ] AC5: [E]dit allows manual editing, returns to menu
+- [x] AC1: Summary displays with counts AND one example per type
+- [x] AC2: [V]iew shows full refined content
+- [x] AC3: [A]pprove updates metadata correctly
+- [x] AC4: [R]eject sets use_original: true
+- [x] AC5: [E]dit allows manual editing, returns to menu
 </verification>
 
 ## Dependencies
@@ -136,6 +136,26 @@ yq '.use_original' libraries/*/metadata.yaml  # Expected: true
 - Requires unified refinement prompt (Stories 3.1, 3.2, 3.3 combined)
 - Requires refinement output parsing (per Epic Overview output schema)
 - Requires refined.md to exist from refinement execution
+
+## Technical Implementation Notes
+
+<technical_implementation_notes>
+**Implemented:** 2026-02-06
+
+**Architecture:** Integrated into Steps 7-8 of `.claude/skills/refine/SKILL.md` rather than a separate skill (KISS: one skill handles refinement and review).
+
+**Key Decisions:**
+- Review menu: [A]pprove / [R]eject / [V]iew / [E]dit
+- Approve: stage -> refined, refinement_decision: approved
+- Reject: stage -> refinement_skipped, use_original: true
+- View: display full refined.md, return to menu
+- Edit: user edits file manually, return to menu
+- No re-refinement loop, no toggle restoration, no iteration tracking
+- Summary shows counts + one example per removal type + word reduction %
+
+**KISS Compliance:** No separate review skill, integrated into refine workflow
+**Files Modified:** `.claude/skills/refine/SKILL.md` (Steps 7-8)
+</technical_implementation_notes>
 
 ## References
 

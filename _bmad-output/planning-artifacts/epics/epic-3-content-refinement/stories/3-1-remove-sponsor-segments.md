@@ -1,6 +1,6 @@
 # Story 3.1: Remove Sponsor Segments
 
-Status: ready
+Status: done
 
 ## Story
 
@@ -26,11 +26,11 @@ This story defines the **sponsor detection rules** for the unified refinement pr
 
 ## Tasks
 
-- [ ] **Task 1: Write Section A of unified prompt** (AC: 1, 2, 3, 4, 5)
-  - [ ] 1.1 Write "Section A: Sponsor Removal Rules" markdown
-  - [ ] 1.2 Include detection criteria with examples
-  - [ ] 1.3 Include preservation rules for technical mentions
-  - [ ] 1.4 Specify output: count for `sponsors_removed` + one example
+- [x] **Task 1: Write Section A of unified prompt** (AC: 1, 2, 3, 4, 5)
+  - [x] 1.1 Write "Section A: Sponsor Removal Rules" markdown
+  - [x] 1.2 Include detection criteria with examples
+  - [x] 1.3 Include preservation rules for technical mentions
+  - [x] 1.4 Specify output: count for `sponsors_removed` + one example
 
 **KISS Note:** One deliverable (prompt section). No separate test fixtures - test unified prompt output in Story 3.4.
 
@@ -112,9 +112,9 @@ diff refined-output.md fixtures/expected/sponsor-segments.expected.md
 ```
 
 ### Manual Verification
-- [ ] AC1: Read refined.md aloud - no sponsor interruptions
-- [ ] AC2: Technical mentions preserved (grep for test terms)
-- [ ] AC5: Transitions flow naturally - no orphaned references
+- [x] AC1: Read refined.md aloud - no sponsor interruptions
+- [x] AC2: Technical mentions preserved (grep for test terms)
+- [x] AC5: Transitions flow naturally - no orphaned references
 </verification>
 
 ## Dependencies
@@ -122,6 +122,23 @@ diff refined-output.md fixtures/expected/sponsor-segments.expected.md
 - Part of unified refinement skill (see [Epic Overview](../overview.md))
 - Requires transcript.md to exist in library item folder
 - Uses Claude's built-in capabilities (no external dependencies)
+
+## Technical Implementation Notes
+
+<technical_implementation_notes>
+**Implemented:** 2026-02-06
+
+**Architecture:** Section A of the unified refinement prompt in `.claude/skills/refine/SKILL.md`. Claude's language understanding detects sponsors by context, not just keywords.
+
+**Key Decisions:**
+- Context-based detection (sponsorship language + discount codes + affiliate CTAs)
+- Explicit preservation rules for technical product mentions
+- ENTIRE sponsor segment removed, not just trigger phrases
+- Stats output: `sponsors_removed` count + one example
+
+**KISS Compliance:** One deliverable (prompt section), no separate test fixtures
+**Files Created:** `.claude/skills/refine/SKILL.md` (shared with 3-2, 3-3, 3-4)
+</technical_implementation_notes>
 
 ## References
 

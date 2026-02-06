@@ -1,6 +1,6 @@
 # Story 3.2: Remove Visual References
 
-Status: ready
+Status: done
 
 ## Story
 
@@ -26,11 +26,11 @@ This story defines the **visual reference rules** for the unified refinement pro
 
 ## Tasks
 
-- [ ] **Task 1: Write Section B of unified prompt** (AC: 1, 2, 3, 4, 5)
-  - [ ] 1.1 Write "Section B: Visual Reference Rules" markdown
-  - [ ] 1.2 Define explained vs unexplained classification
-  - [ ] 1.3 Define transformation rules (prefix removal, sentence removal)
-  - [ ] 1.4 Specify output: count for `visual_refs_removed` + one example
+- [x] **Task 1: Write Section B of unified prompt** (AC: 1, 2, 3, 4, 5)
+  - [x] 1.1 Write "Section B: Visual Reference Rules" markdown
+  - [x] 1.2 Define explained vs unexplained classification
+  - [x] 1.3 Define transformation rules (prefix removal, sentence removal)
+  - [x] 1.4 Specify output: count for `visual_refs_removed` + one example
 
 **KISS Note:** One deliverable (prompt section). Grammar preservation is Claude's responsibility. No separate test fixtures.
 
@@ -117,10 +117,10 @@ diff refined-output.md fixtures/expected/visual-references.expected.md
 ```
 
 ### Manual Verification
-- [ ] AC1: No unexplained visual refs in refined.md
-- [ ] AC2: Explanations preserved (check for technical content)
-- [ ] AC3: Read aloud - all sentences grammatically complete
-- [ ] AC5: Transitions are natural after removal
+- [x] AC1: No unexplained visual refs in refined.md
+- [x] AC2: Explanations preserved (check for technical content)
+- [x] AC3: Read aloud - all sentences grammatically complete
+- [x] AC5: Transitions are natural after removal
 </verification>
 
 ## Dependencies
@@ -128,6 +128,24 @@ diff refined-output.md fixtures/expected/visual-references.expected.md
 - Part of unified refinement skill (see [Epic Overview](../overview.md))
 - Requires transcript.md to exist in library item folder
 - Uses Claude's built-in capabilities (no external dependencies)
+
+## Technical Implementation Notes
+
+<technical_implementation_notes>
+**Implemented:** 2026-02-06
+
+**Architecture:** Section B of the unified refinement prompt in `.claude/skills/refine/SKILL.md`.
+
+**Key Decisions:**
+- Explained refs: remove prefix, keep explanation ("As you can see, X returns Y" -> "X returns Y")
+- Unexplained refs: remove entire sentence ("Look at this diagram" -> removed)
+- Mid-sentence refs: restructure for grammar ("The function, as you can see, returns" -> "The function returns")
+- Grammar preservation is Claude's responsibility
+- Stats output: `visual_refs_removed` count + one example
+
+**KISS Compliance:** One deliverable (prompt section), no separate test fixtures
+**Files Modified:** `.claude/skills/refine/SKILL.md` (Section B added)
+</technical_implementation_notes>
 
 ## References
 
