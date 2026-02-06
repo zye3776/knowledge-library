@@ -1,4 +1,4 @@
-# generated: 2026-01-23
+# generated: 2026-02-05
 # project: knowledge-library
 # project_key: knowledge-library
 # tracking_system: file-system
@@ -33,7 +33,7 @@
 # - SM typically creates next story after previous one is 'done' to incorporate learnings
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
-generated: 2026-01-30
+generated: 2026-02-05
 project: knowledge-library
 project_key: knowledge-library
 tracking_system: file-system
@@ -51,30 +51,30 @@ development_status:
 
   # Epic 2: Audio Consumption
   epic-2: backlog
-  2-1-convert-text-to-audio: backlog
-  2-2-configure-voice-preferences: backlog
-  2-3-chunked-audio-for-long-content: backlog
+  2-1-convert-text-to-audio: ready-for-dev
+  2-2-configure-voice-preferences: ready-for-dev
+  2-3-chunked-audio-long-content: ready-for-dev
   epic-2-retrospective: optional
 
   # Epic 3: Content Refinement
   epic-3: backlog
-  3-1-remove-sponsor-segments: backlog
-  3-2-remove-visual-references: backlog
-  3-3-remove-ad-content: backlog
-  3-4-review-refined-content: backlog
+  3-1-remove-sponsor-segments: ready-for-dev
+  3-2-remove-visual-references: ready-for-dev
+  3-3-remove-ad-content: ready-for-dev
+  3-4-review-refined-content: ready-for-dev
   epic-3-retrospective: optional
 
   # Epic 4: Pipeline Orchestration
   epic-4: backlog
-  4-1-run-full-pipeline: backlog
-  4-2-access-content-library: backlog
-  4-3-re-run-pipeline-stage: backlog
+  4-1-run-full-pipeline: ready-for-dev
+  4-2-access-content-library: ready-for-dev
+  4-3-re-run-pipeline-stage: ready-for-dev
   epic-4-retrospective: optional
 
   # Epic 5: Module Foundation & Configuration
   epic-5: backlog
-  5-1-initialize-project-configuration: backlog
-  5-2-configure-output-directories: backlog
-  5-3-configure-processing-rules: backlog
-  5-4-simple-command-invocation: backlog
+  5-1-initialize-project-config: ready-for-dev
+  5-2-configure-output-directories: ready-for-dev
+  5-3-configure-processing-rules: ready-for-dev
+  5-4-simple-command-invocation: ready-for-dev
   epic-5-retrospective: optional
