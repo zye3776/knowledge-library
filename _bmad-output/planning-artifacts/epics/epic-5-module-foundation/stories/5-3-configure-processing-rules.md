@@ -1,0 +1,138 @@
+# Story 5.3: Configure Processing Rules
+
+Status: ready
+
+## Story
+
+As a **knowledge library user**,
+I want to configure default content processing rules,
+So that refinement automatically applies my preferred cleanup settings.
+
+## Background
+
+Different users may have different preferences for content refinement. Some may want all noise removed, others may prefer to keep certain elements. This story enables users to set default processing rules that are applied unless overridden per-item.
+
+## Acceptance Criteria
+
+<acceptance_criteria>
+1. **AC1:** Given processing.remove_sponsors is false, when refinement runs, then sponsor segments are preserved
+2. **AC2:** Given processing.remove_visual_refs is false, when refinement runs, then visual references are preserved
+3. **AC3:** Given processing.remove_ads is false, when refinement runs, then ad content is preserved
+4. **AC4:** Given all processing rules are true (default), when refinement runs, then all noise types are removed
+5. **AC5:** Given processing section is missing from config, when refinement runs, then defaults (all true) are used
+</acceptance_criteria>
+
+## Tasks
+
+- [ ] **Task 1: Config reading for processing** (AC: 1, 2, 3, 4, 5)
+  - [ ] 1.1 Read processing section from config.yaml
+  - [ ] 1.2 Apply defaults for missing values
+  - [ ] 1.3 Validate boolean values
+
+- [ ] **Task 2: Rule application in refinement** (AC: 1, 2, 3, 4)
+  - [ ] 2.1 Check remove_sponsors flag before sponsor removal
+  - [ ] 2.2 Check remove_visual_refs flag before visual ref removal
+  - [ ] 2.3 Check remove_ads flag before ad removal
+  - [ ] 2.4 Skip disabled removals in refinement prompt
+
+- [ ] **Task 3: Default handling** (AC: 5)
+  - [ ] 3.1 Define default values for all processing rules
+  - [ ] 3.2 Merge user config with defaults
+  - [ ] 3.3 Handle completely missing processing section
+
+## Technical Notes
+
+<technical_notes>
+**Config Structure:**
+```yaml
+processing:
+  remove_sponsors: true     # Remove sponsor segments (default: true)
+  remove_visual_refs: true  # Remove unexplained visual references (default: true)
+  remove_ads: true          # Remove promotional content (default: true)
+```
+
+**Default Values:**
+```typescript
+const PROCESSING_DEFAULTS = {
+  remove_sponsors: true,
+  remove_visual_refs: true,
+  remove_ads: true
+};
+```
+
+**Rule Application in Refinement Prompt:**
+```
+The refinement prompt is dynamically built based on enabled rules:
+
+If remove_sponsors: true → Include sponsor detection instructions
+If remove_visual_refs: true → Include visual reference instructions
+If remove_ads: true → Include ad content instructions
+
+If all false → Skip refinement entirely, copy transcript.md to refined.md
+```
+
+**Config Examples:**
+
+Minimal noise removal (keep most content):
+```yaml
+processing:
+  remove_sponsors: true
+  remove_visual_refs: false
+  remove_ads: false
+```
+
+Full cleanup (default):
+```yaml
+processing:
+  remove_sponsors: true
+  remove_visual_refs: true
+  remove_ads: true
+```
+
+**Per-Item Override (Future):**
+This story establishes defaults. Future enhancement could allow per-item overrides in metadata.yaml.
+</technical_notes>
+
+## Verification
+
+<verification>
+```bash
+# AC1 Verification - Sponsors preserved when disabled
+# Edit config.yaml: processing.remove_sponsors: false
+# Run refinement on transcript with sponsors
+grep -i "sponsored by" libraries/*/refined.md
+# Expected: Sponsor content preserved
+
+# AC2 Verification - Visual refs preserved when disabled
+# Edit config.yaml: processing.remove_visual_refs: false
+# Run refinement on transcript with visual refs
+grep -i "as you can see" libraries/*/refined.md
+# Expected: Visual references preserved
+
+# AC3 Verification - Ads preserved when disabled
+# Edit config.yaml: processing.remove_ads: false
+# Run refinement on transcript with ads
+grep -i "subscribe" libraries/*/refined.md
+# Expected: Ad content preserved
+
+# AC4 Verification - All removed when all true
+# Reset config to defaults (all true)
+# Run refinement
+# Expected: All noise types removed
+
+# AC5 Verification - Missing section uses defaults
+# Remove processing section from config.yaml
+# Run refinement
+# Expected: Behaves as if all true
+```
+</verification>
+
+## Dependencies
+
+- Requires Story 5.1 (config.yaml exists)
+- Requires Epic 3 (refinement capabilities exist)
+
+## References
+
+- [Epic Overview](../overview.md)
+- [PRD FR20](/_bmad-output/planning-artifacts/prd.md)

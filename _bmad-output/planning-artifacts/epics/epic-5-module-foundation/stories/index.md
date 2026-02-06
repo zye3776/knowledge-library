@@ -4,10 +4,10 @@
 
 | # | Story | Priority | Status | Dependencies |
 |---|-------|----------|--------|--------------|
-| 5.1 | [Initialize Project Configuration](./5-1-initialize-project-config.md) | P0 | backlog | None |
-| 5.2 | [Configure Output Directories](./5-2-configure-output-directories.md) | P0 | backlog | 5.1 |
-| 5.3 | [Configure Processing Rules](./5-3-configure-processing-rules.md) | P1 | backlog | 5.1 |
-| 5.4 | [Simple Command Invocation](./5-4-simple-command-invocation.md) | P0 | backlog | 5.1 |
+| 5.1 | [Initialize Project Configuration](./5-1-initialize-project-config.md) | P0 | ready | None |
+| 5.2 | [Configure Output Directories](./5-2-configure-output-directories.md) | P0 | ready | 5.1 |
+| 5.3 | [Configure Processing Rules](./5-3-configure-processing-rules.md) | P1 | ready | 5.1 |
+| 5.4 | [Simple Command Invocation](./5-4-simple-command-invocation.md) | P0 | ready | 5.1 |
 
 ## Dependency Graph
 
