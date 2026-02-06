@@ -15,7 +15,7 @@ Convert a library item's transcript to audio using OpenAI TTS.
 - Converting transcript or refined content to speech
 - Preparing content for screen-free consumption (walks, commutes)
 
-**Requires:** `OPENAI_API_KEY` environment variable.
+**Requires:** `OPENAI_API_KEY` environment variable. `ffmpeg` for long content (>4000 chars).
 
 ## Setup
 
@@ -89,12 +89,31 @@ bun run build
 
 ### Step 5: Generate Audio
 
-1. Run the tts-openai skill with the selected voice:
+1. Count the characters in the content file: `wc -c libraries/{slug}/{content_file}`
+2. **If content ≤ 4000 characters** (standard mode):
    ```bash
    .claude/skills/tts-openai/scripts/speak -v {voice} -f libraries/{slug}/{content_file} -o libraries/{slug}/audio.mp3
    ```
-2. If the command fails, report the error and stop
-3. Verify `libraries/{slug}/audio.mp3` was created
+3. **If content > 4000 characters** (chunked mode):
+   1. Check that `ffmpeg` is installed: `which ffmpeg`
+   2. If ffmpeg is missing, report error and stop:
+      ```
+      Error: ffmpeg is required for long content (>4000 chars). Install: brew install ffmpeg
+      ```
+   3. Log: `Using chunked mode ({N} chars)`
+   4. Create temp directory and run chunked TTS:
+      ```bash
+      mkdir -p /tmp/tts-{slug}
+      .claude/skills/tts-openai/scripts/speak --chunked -v {voice} -f libraries/{slug}/{content_file} -d /tmp/tts-{slug}
+      ```
+   5. Create a file list and concatenate chunks with ffmpeg:
+      ```bash
+      for f in $(ls /tmp/tts-{slug}/chunk-*.mp3 | sort); do echo "file '$f'"; done > /tmp/tts-{slug}/filelist.txt
+      ffmpeg -y -f concat -safe 0 -i /tmp/tts-{slug}/filelist.txt -c copy libraries/{slug}/audio.mp3
+      ```
+   6. Note the chunk count for metadata
+4. If any command fails, report the error and stop
+5. Verify `libraries/{slug}/audio.mp3` was created
 
 ### Step 6: Update Metadata
 
@@ -104,6 +123,10 @@ bun run build
    - `audio_generated_at: "{ISO 8601 timestamp}"` (e.g., `"2026-02-06T10:30:00.000Z"`)
    - `audio_file: audio.mp3`
    - `tts_voice: {voice}` (the voice used, e.g., `nova`, `echo`, etc.)
+   - If chunked mode was used, also add:
+     - `tts_chunked: true`
+     - `tts_chunk_count: {N}` (number of chunks generated)
+     - `content_chars: {N}` (character count of source content)
 3. Write back the updated metadata.yaml, preserving existing fields
 
 ### Step 7: Report Success
@@ -114,6 +137,7 @@ Audio generated successfully.
   Source: libraries/{slug}/{content_file}
   Output: libraries/{slug}/audio.mp3
   Voice: {voice}
+  Mode: {standard | chunked (N chunks, M chars)}
   Metadata updated: stage → consumed
 ```
 
@@ -129,6 +153,7 @@ Audio generated successfully.
 | Library item not found | Report missing directory |
 | No content file | Report expected files |
 | TTS generation fails | Report error from tts-openai |
+| ffmpeg not installed | Show install instructions (long content only) |
 | audio.mp3 exists | Warn and overwrite |
 
 ## Voices
@@ -145,16 +170,20 @@ Audio generated successfully.
 ## Examples
 
 ```bash
-# Convert with default voice (nova)
+# Short content (standard mode)
 /consume best-to-do-list-apps-for-2026
 
-# Convert with a specific voice
+# With voice selection
 /consume best-to-do-list-apps-for-2026 -v echo
 
+# Long content auto-detects chunked mode
+/consume long-lecture-slug
 # Output:
+# Using chunked mode (48000 chars)
 # Audio generated successfully.
-#   Source: libraries/best-to-do-list-apps-for-2026/transcript.md
-#   Output: libraries/best-to-do-list-apps-for-2026/audio.mp3
-#   Voice: echo
+#   Source: libraries/long-lecture-slug/transcript.md
+#   Output: libraries/long-lecture-slug/audio.mp3
+#   Voice: nova
+#   Mode: chunked (12 chunks, 48000 chars)
 #   Metadata updated: stage → consumed
 ```

@@ -1,6 +1,6 @@
 # Story 2.3: Chunked Audio for Long Content
 
-Status: backlog
+Status: done
 
 ## Story
 
@@ -27,19 +27,19 @@ The tts-openai skill already has `--chunked` mode that splits content by paragra
 
 ## Tasks
 
-- [ ] **Task 1: Length detection** (AC: 1, 3)
-  - [ ] 1.1 Count characters in content file before TTS
-  - [ ] 1.2 If > 4000, use `--chunked` flag
-  - [ ] 1.3 If <= 4000, use standard mode
+- [x] **Task 1: Length detection** (AC: 1, 3)
+  - [x] 1.1 Count characters in content file before TTS
+  - [x] 1.2 If > 4000, use `--chunked` flag
+  - [x] 1.3 If <= 4000, use standard mode
 
-- [ ] **Task 2: Chunked mode integration** (AC: 2)
-  - [ ] 2.1 Invoke: `.claude/skills/tts-openai/scripts/speak --chunked -f {content} -d /tmp/tts-{slug}`
-  - [ ] 2.2 Concatenate with ffmpeg: `ffmpeg -f concat -safe 0 -i filelist.txt -c copy audio.mp3`
-  - [ ] 2.3 Update metadata with `tts_chunked: true` and `tts_chunk_count`
+- [x] **Task 2: Chunked mode integration** (AC: 2)
+  - [x] 2.1 Invoke: `.claude/skills/tts-openai/scripts/speak --chunked -f {content} -d /tmp/tts-{slug}`
+  - [x] 2.2 Concatenate with ffmpeg: `ffmpeg -f concat -safe 0 -i filelist.txt -c copy audio.mp3`
+  - [x] 2.3 Update metadata with `tts_chunked: true` and `tts_chunk_count`
 
-- [ ] **Task 3: ffmpeg requirement** (AC: 4)
-  - [ ] 3.1 Check ffmpeg exists before chunked mode
-  - [ ] 3.2 If missing: "Error: ffmpeg required for long content. Install: brew install ffmpeg"
+- [x] **Task 3: ffmpeg requirement** (AC: 4)
+  - [x] 3.1 Check ffmpeg exists before chunked mode
+  - [x] 3.2 If missing: "Error: ffmpeg required for long content. Install: brew install ffmpeg"
 
 ## Technical Notes
 
@@ -104,6 +104,30 @@ echo "Short." > /tmp/short.md
 - Story 2.1 must be complete (consume skill exists)
 - tts-openai skill `--chunked` mode implemented
 - ffmpeg required for concatenation
+
+## Technical Implementation Notes
+
+<technical_implementation_notes>
+**Implemented:** 2026-02-06
+
+**Architecture:** Modified existing consume SKILL.md to add automatic length detection and chunked mode routing. No new files created.
+
+**Key Decisions:**
+- Hard-coded 4000 char threshold (OpenAI limit 4096 with safety buffer)
+- ffmpeg required for concatenation, no fallback (KISS: one code path)
+- Temp files in `/tmp/tts-{slug}/`, OS handles cleanup
+- No resume support - re-run on failure
+- Metadata extended with `tts_chunked`, `tts_chunk_count`, `content_chars`
+- `-y` flag on ffmpeg to auto-overwrite without prompt
+
+**KISS Compliance:**
+- No config file for threshold
+- No resume/fallback mechanisms
+- Standard/chunked routing is a single branch in Step 5
+- Single output file always: `libraries/{slug}/audio.mp3`
+
+**Files Modified:** `.claude/skills/consume/SKILL.md`
+</technical_implementation_notes>
 
 ## References
 
