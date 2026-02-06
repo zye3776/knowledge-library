@@ -48,18 +48,24 @@ Users can run the complete Extract -> Refine -> Consume pipeline in a single ses
 
 <nfr>
 ### Reliability
-- Pipeline can be stopped and resumed at any checkpoint
-- Partial completion saves progress (no lost work)
-- Clear status display at each stage
+- Stage failures preserve completed work (no lost progress)
+- Clear error messages identify failed stage
+- Re-run capability for surgical fixes
 
 ### Usability
-- Single command to start full pipeline
-- Easy navigation of existing content
+- Single command to start full pipeline (fire-and-forget)
+- Easy navigation of existing content (sorted by date)
 - Clear indication of content processing state
 
 ### Simplicity
-- Linear pipeline flow (no branching)
+- Linear pipeline flow (no intermediate checkpoints)
 - One content item at a time
+- Single-stage re-runs (no cascade complexity)
+
+### Testing Strategy (MVP)
+- Manual testing only for MVP phase
+- Verification scripts provided in story files
+- Automation deferred to post-MVP
 </nfr>
 
 ---

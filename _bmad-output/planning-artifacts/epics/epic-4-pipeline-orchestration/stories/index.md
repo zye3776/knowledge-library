@@ -4,9 +4,9 @@
 
 | # | Story | Priority | Status | Dependencies |
 |---|-------|----------|--------|--------------|
-| 4.1 | [Run Full Pipeline](./4-1-run-full-pipeline.md) | P0 | backlog | None |
-| 4.2 | [Access Content Library](./4-2-access-content-library.md) | P0 | backlog | None |
-| 4.3 | [Re-run Pipeline Stage](./4-3-re-run-pipeline-stage.md) | P1 | backlog | 4.1, 4.2 |
+| 4.1 | [Run Full Pipeline](./4-1-run-full-pipeline.md) | P0 | ready | None |
+| 4.2 | [Access Content Library](./4-2-access-content-library.md) | P0 | ready | None |
+| 4.3 | [Re-run Pipeline Stage](./4-3-re-run-pipeline-stage.md) | P1 | ready | 4.1, 4.2 |
 
 ## Dependency Graph
 
