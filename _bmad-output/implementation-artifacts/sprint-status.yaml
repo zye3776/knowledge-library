@@ -65,10 +65,10 @@ development_status:
   epic-3-retrospective: optional
 
   # Epic 4: Pipeline Orchestration
-  epic-4: backlog
-  4-1-run-full-pipeline: ready-for-dev
-  4-2-access-content-library: ready-for-dev
-  4-3-re-run-pipeline-stage: ready-for-dev
+  epic-4: done
+  4-1-run-full-pipeline: done
+  4-2-access-content-library: done
+  4-3-re-run-pipeline-stage: done
   epic-4-retrospective: optional
 
   # Epic 5: Module Foundation & Configuration

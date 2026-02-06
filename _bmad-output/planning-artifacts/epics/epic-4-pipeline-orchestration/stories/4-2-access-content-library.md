@@ -1,6 +1,6 @@
 # Story 4.2: Access Content Library
 
-Status: ready
+Status: done
 
 ## Story
 
@@ -25,18 +25,18 @@ As users process more content, the knowledge library grows. This story enables u
 
 ## Tasks
 
-- [ ] **Task 1: Library listing** (AC: 1, 5)
-  - [ ] 1.1 Scan libraries/ directory for content folders
-  - [ ] 1.2 Read metadata.yaml from each folder
-  - [ ] 1.3 Sort by newest first (use most recent stage timestamp)
-  - [ ] 1.4 Display formatted list with title, status, and date
-  - [ ] 1.5 Handle empty library gracefully
+- [x] **Task 1: Library listing** (AC: 1, 5)
+  - [x] 1.1 Scan libraries/ directory for content folders
+  - [x] 1.2 Read metadata.yaml from each folder
+  - [x] 1.3 Sort by newest first (use most recent stage timestamp)
+  - [x] 1.4 Display formatted list with title, status, and date
+  - [x] 1.5 Handle empty library gracefully
 
-- [ ] **Task 2: Item details and content access** (AC: 2, 3, 4, 6)
-  - [ ] 2.1 Display full metadata for selected item
-  - [ ] 2.2 Show processing history (stage timestamps)
-  - [ ] 2.3 Check which files exist before listing outputs
-  - [ ] 2.4 Print file paths to terminal when user selects an output
+- [x] **Task 2: Item details and content access** (AC: 2, 3, 4, 6)
+  - [x] 2.1 Display full metadata for selected item
+  - [x] 2.2 Show processing history (stage timestamps)
+  - [x] 2.3 Check which files exist before listing outputs
+  - [x] 2.4 Print file paths to terminal when user selects an output
 
 ## Technical Notes
 
@@ -126,6 +126,25 @@ rm -rf libraries/* && # run browse command
 
 - Requires library folder structure from Epic 1
 - Requires metadata.yaml format established
+
+## Technical Implementation Notes
+
+<technical_implementation_notes>
+**Implemented:** 2026-02-06
+
+**Architecture:** `.claude/skills/library/SKILL.md` - instruction skill for browsing and accessing library items.
+
+**Key Decisions:**
+- Scans libraries/ directory, reads metadata.yaml per item
+- Status derived from file existence: audio > refined > extracted
+- Sorted by most recent timestamp (newest first)
+- Item details show available files with actions
+- Empty library shows getting-started instructions
+- File paths printed for user access (transcript, refined, audio)
+
+**KISS Compliance:** Single skill file, table display, no pagination
+**Files Created:** `.claude/skills/library/SKILL.md`
+</technical_implementation_notes>
 
 ## References
 

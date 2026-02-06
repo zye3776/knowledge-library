@@ -1,6 +1,6 @@
 # Story 4.3: Re-run Pipeline Stage
 
-Status: ready
+Status: done
 
 ## Story
 
@@ -25,30 +25,30 @@ Users may want to re-run individual stages: perhaps refinement removed too much 
 
 ## Tasks
 
-- [ ] **Task 1: Re-run menu with confirmation** (AC: 1, 6)
-  - [ ] 1.1 Add re-run option to library item detail view (modifies Story 4.2 output)
-  - [ ] 1.2 Present stage selection menu (Extract/Refine/Consume)
-  - [ ] 1.3 Check prerequisites before allowing stage selection
-  - [ ] 1.4 Display overwrite warning and require confirmation
+- [x] **Task 1: Re-run menu with confirmation** (AC: 1, 6)
+  - [x] 1.1 Add re-run option to library item detail view (modifies Story 4.2 output)
+  - [x] 1.2 Present stage selection menu (Extract/Refine/Consume)
+  - [x] 1.3 Check prerequisites before allowing stage selection
+  - [x] 1.4 Display overwrite warning and require confirmation
 
-- [ ] **Task 2: Extract re-run** (AC: 2, 5, 6)
-  - [ ] 2.1 Validate source_url exists in metadata
-  - [ ] 2.2 Re-invoke extraction from stored source URL
-  - [ ] 2.3 Replace transcript.md with new content
-  - [ ] 2.4 Update extract.completed_at timestamp
+- [x] **Task 2: Extract re-run** (AC: 2, 5, 6)
+  - [x] 2.1 Validate source_url exists in metadata
+  - [x] 2.2 Re-invoke extraction from stored source URL
+  - [x] 2.3 Replace transcript.md with new content
+  - [x] 2.4 Update extract.completed_at timestamp
 
-- [ ] **Task 3: Refine re-run** (AC: 3, 5, 6)
-  - [ ] 3.1 Validate transcript.md exists
-  - [ ] 3.2 Re-invoke refinement on current transcript.md
-  - [ ] 3.3 Replace refined.md with new content
-  - [ ] 3.4 Update refine.completed_at timestamp
+- [x] **Task 3: Refine re-run** (AC: 3, 5, 6)
+  - [x] 3.1 Validate transcript.md exists
+  - [x] 3.2 Re-invoke refinement on current transcript.md
+  - [x] 3.3 Replace refined.md with new content
+  - [x] 3.4 Update refine.completed_at timestamp
 
-- [ ] **Task 4: Consume re-run** (AC: 4, 5, 6)
-  - [ ] 4.1 Validate transcript.md or refined.md exists
-  - [ ] 4.2 Determine best source (prefer refined.md if exists)
-  - [ ] 4.3 Re-invoke TTS generation
-  - [ ] 4.4 Replace audio file
-  - [ ] 4.5 Update consume.completed_at timestamp
+- [x] **Task 4: Consume re-run** (AC: 4, 5, 6)
+  - [x] 4.1 Validate transcript.md or refined.md exists
+  - [x] 4.2 Determine best source (prefer refined.md if exists)
+  - [x] 4.3 Re-invoke TTS generation
+  - [x] 4.4 Replace audio file
+  - [x] 4.5 Update consume.completed_at timestamp
 
 ## Technical Notes
 
@@ -121,6 +121,25 @@ cat libraries/*/metadata.yaml | grep -A5 "completed_at"
 
 - Requires Story 4.1 (pipeline orchestration exists)
 - Requires Story 4.2 (library access enables item selection)
+
+## Technical Implementation Notes
+
+<technical_implementation_notes>
+**Implemented:** 2026-02-06
+
+**Architecture:** Integrated into `.claude/skills/library/SKILL.md` Step 5 (Re-run menu) rather than a separate skill.
+
+**Key Decisions:**
+- Re-run menu accessible from library item detail view
+- Prerequisite checks before each stage (source_url, transcript.md, content files)
+- Overwrite confirmation before replacing files
+- Invokes existing skills: extract-youtube, refine, consume
+- Single-stage only (no cascade re-run)
+- Metadata timestamps updated by underlying skills
+
+**KISS Compliance:** Integrated into library skill, no separate re-run skill
+**Files Modified:** `.claude/skills/library/SKILL.md` (Step 5 added)
+</technical_implementation_notes>
 
 ## References
 

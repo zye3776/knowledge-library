@@ -1,6 +1,6 @@
 # Story 4.1: Run Full Pipeline
 
-Status: ready
+Status: done
 
 ## Story
 
@@ -24,21 +24,21 @@ The three-phase pipeline (Extract, Refine, Consume) has been built as separate c
 
 ## Tasks
 
-- [ ] **Task 1: Pipeline orchestration workflow** (AC: 1, 2)
-  - [ ] 1.1 Create workflow entry point that accepts YouTube URL
-  - [ ] 1.2 Invoke extract stage and wait for completion
-  - [ ] 1.3 Invoke refine stage and wait for completion
-  - [ ] 1.4 Invoke consume stage (TTS generation)
-  - [ ] 1.5 Display completion summary (word counts, audio duration)
+- [x] **Task 1: Pipeline orchestration workflow** (AC: 1, 2)
+  - [x] 1.1 Create workflow entry point that accepts YouTube URL
+  - [x] 1.2 Invoke extract stage and wait for completion
+  - [x] 1.3 Invoke refine stage and wait for completion
+  - [x] 1.4 Invoke consume stage (TTS generation)
+  - [x] 1.5 Display completion summary (word counts, audio duration)
 
-- [ ] **Task 2: Progress tracking** (AC: 5)
-  - [ ] 2.1 Update status field after each stage completion
-  - [ ] 2.2 Record completed_at timestamp for each stage
+- [x] **Task 2: Progress tracking** (AC: 5)
+  - [x] 2.1 Update status field after each stage completion
+  - [x] 2.2 Record completed_at timestamp for each stage
 
-- [ ] **Task 3: Error handling** (AC: 3, 4)
-  - [ ] 3.1 Catch stage failures gracefully
-  - [ ] 3.2 Display clear error messages with stage context
-  - [ ] 3.3 Preserve completed work from prior stages
+- [x] **Task 3: Error handling** (AC: 3, 4)
+  - [x] 3.1 Catch stage failures gracefully
+  - [x] 3.2 Display clear error messages with stage context
+  - [x] 3.3 Preserve completed work from prior stages
 
 ## Technical Notes
 
@@ -114,6 +114,24 @@ cat libraries/*/metadata.yaml | grep -A10 "pipeline:"
 - Requires Epic 1 (Extract) completed
 - Requires Epic 2 (Consume) completed
 - Requires Epic 3 (Refine) completed
+
+## Technical Implementation Notes
+
+<technical_implementation_notes>
+**Implemented:** 2026-02-06
+
+**Architecture:** `.claude/skills/pipeline/SKILL.md` - instruction skill that orchestrates extract -> refine -> consume in sequence.
+
+**Key Decisions:**
+- Invokes existing skills (extract-youtube, save-content, refine, consume) rather than duplicating logic
+- Error handling: halt with progress preserved on stage failure
+- Refinement review included (user approves/rejects during pipeline)
+- Completion summary shows word counts and file listing
+- Voice selection passed through to consume stage
+
+**KISS Compliance:** Single skill file, linear flow, no config file
+**Files Created:** `.claude/skills/pipeline/SKILL.md`
+</technical_implementation_notes>
 
 ## References
 
