@@ -1,6 +1,6 @@
 # Story 2.1: Convert Text to Audio
 
-Status: backlog
+Status: done
 
 ## Story
 
@@ -24,17 +24,17 @@ This is the core audio consumption story. The tts-openai skill already exists wi
 
 ## Tasks
 
-- [ ] **Task 1: Consume skill** (AC: 1, 3)
-  - [ ] 1.1 Create consume skill at `.claude/skills/consume/SKILL.md`
-  - [ ] 1.2 Accept slug as argument
-  - [ ] 1.3 Check for refined.md first, fall back to transcript.md
-  - [ ] 1.4 Invoke tts-openai: `.claude/skills/tts-openai/scripts/speak -f {content} -o libraries/{slug}/audio.mp3`
-  - [ ] 1.5 Update metadata.yaml with `stage: consumed`, `audio_generated_at`, `audio_file`
+- [x] **Task 1: Consume skill** (AC: 1, 3)
+  - [x] 1.1 Create consume skill at `.claude/skills/consume/SKILL.md`
+  - [x] 1.2 Accept slug as argument
+  - [x] 1.3 Check for refined.md first, fall back to transcript.md
+  - [x] 1.4 Invoke tts-openai: `.claude/skills/tts-openai/scripts/speak -v nova -f {content} -o libraries/{slug}/audio.mp3`
+  - [x] 1.5 Update metadata.yaml with `stage: consumed`, `audio_generated_at`, `audio_file`
 
-- [ ] **Task 2: Error handling** (AC: 2)
-  - [ ] 2.1 Check OPENAI_API_KEY before starting generation
-  - [ ] 2.2 Display clear setup instructions if key missing
-  - [ ] 2.3 If audio.mp3 already exists, overwrite with warning message (no prompt)
+- [x] **Task 2: Error handling** (AC: 2)
+  - [x] 2.1 Check OPENAI_API_KEY before starting generation
+  - [x] 2.2 Display clear setup instructions if key missing
+  - [x] 2.3 If audio.mp3 already exists, overwrite with warning message (no prompt)
 
 ## Technical Notes
 
@@ -90,6 +90,29 @@ yq '.audio_generated_at' libraries/test-slug/metadata.yaml  # Expected: ISO time
 - tts-openai skill must be built: `cd .claude/skills/tts-openai && bun install && bun run build`
 - OPENAI_API_KEY environment variable must be set
 - Library item must exist with transcript.md or refined.md
+
+## Technical Implementation Notes
+
+<technical_implementation_notes>
+**Implemented:** 2026-02-06
+
+**Architecture:** Pure instruction skill (SKILL.md only, no TypeScript code). Claude Code follows the instructions to orchestrate the tts-openai executable.
+
+**Key Decisions:**
+- Explicit `-v nova` flag passed to tts-openai for metadata accuracy (avoids implicit coupling with default)
+- "When to Use" and "Setup" sections added for pattern consistency with peer skills
+- Metadata.yaml is created if absent (defensive for manually-created library items)
+- 7-step instruction flow: validate input → check API key → locate content → check existing audio → generate → update metadata → report
+
+**KISS Compliance:**
+- Single file: `.claude/skills/consume/SKILL.md`
+- No workflow architecture, no step files, no config file
+- No TypeScript code, no build step, no tests required
+- Direct invocation: `/consume {slug}`
+
+**Files Created:** `.claude/skills/consume/SKILL.md`
+**Files Modified:** None (metadata.yaml updated at runtime only)
+</technical_implementation_notes>
 
 ## References
 
