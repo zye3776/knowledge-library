@@ -64,6 +64,16 @@ Expected formats:
 	};
 }
 
+function decodeHtmlEntities(text: string): string {
+	return text
+		.replace(/&amp;/g, "&")
+		.replace(/&lt;/g, "<")
+		.replace(/&gt;/g, ">")
+		.replace(/&quot;/g, '"')
+		.replace(/&#39;/g, "'")
+		.replace(/&apos;/g, "'");
+}
+
 function parseVtt(content: string): string {
 	const lines = content.split("\n");
 	const textLines: string[] = [];
@@ -83,7 +93,7 @@ function parseVtt(content: string): string {
 			continue;
 		}
 
-		const cleaned = line.replace(/<[^>]+>/g, "").trim();
+		const cleaned = decodeHtmlEntities(line.replace(/<[^>]+>/g, "").trim());
 
 		if (cleaned && cleaned !== lastLine) {
 			textLines.push(cleaned);
@@ -104,7 +114,7 @@ function parseSrt(content: string): string {
 			continue;
 		}
 
-		const cleaned = line.replace(/<[^>]+>/g, "").trim();
+		const cleaned = decodeHtmlEntities(line.replace(/<[^>]+>/g, "").trim());
 		if (cleaned && cleaned !== lastLine) {
 			textLines.push(cleaned);
 			lastLine = cleaned;
@@ -192,7 +202,69 @@ See: https://github.com/yt-dlp/yt-dlp/wiki/FAQ#how-do-i-pass-cookies-to-yt-dlp`,
 	};
 }
 
-async function runYtDlp(url: string): Promise<Result<string, ExtractionError>> {
+async function detectVideoLanguage(
+	url: string,
+): Promise<Result<string, ExtractionError>> {
+	// Strategy 1: yt-dlp metadata language field
+	const result = await Bun.$`yt-dlp --print language ${url}`.quiet().nothrow();
+
+	if (result.exitCode === 0) {
+		const lang = result.stdout.toString().trim().toLowerCase();
+		if (lang && lang !== "none" && lang !== "na") {
+			return { ok: true, data: lang };
+		}
+	}
+
+	// Strategy 2: Parse auto-caption keys from --list-subs
+	// Auto-captions use pattern "target-source" (e.g. "en-zh" = English from Chinese)
+	// The source suffix reveals the video's native language
+	const subsResult =
+		await Bun.$`yt-dlp --list-subs --skip-download ${url}`
+			.quiet()
+			.nothrow();
+
+	if (subsResult.exitCode === 0) {
+		const output = subsResult.stdout.toString();
+		// Match first auto-caption key like "en-zh" or "ab-zh"
+		const autoCaptionMatch = output.match(
+			/Available automatic captions[\s\S]*?^(\w+)-(\w+)\s/m,
+		);
+		if (autoCaptionMatch) {
+			return { ok: true, data: autoCaptionMatch[2].toLowerCase() };
+		}
+
+		// Strategy 3: First manual subtitle language as last resort
+		const manualSubMatch = output.match(
+			/Available subtitles[\s\S]*?^(\w+)\s/m,
+		);
+		if (manualSubMatch) {
+			return { ok: true, data: manualSubMatch[1].toLowerCase() };
+		}
+	}
+
+	return { ok: true, data: "en" };
+}
+
+async function findSubtitleFile(dir: string): Promise<string | null> {
+	const vttFiles = await Array.fromAsync(new Bun.Glob("*.vtt").scan(dir));
+	if (vttFiles.length > 0) {
+		const content = await Bun.file(`${dir}/${vttFiles[0]}`).text();
+		return parseVtt(content);
+	}
+
+	const srtFiles = await Array.fromAsync(new Bun.Glob("*.srt").scan(dir));
+	if (srtFiles.length > 0) {
+		const content = await Bun.file(`${dir}/${srtFiles[0]}`).text();
+		return parseSrt(content);
+	}
+
+	return null;
+}
+
+async function runYtDlp(
+	url: string,
+	lang?: string,
+): Promise<Result<string, ExtractionError>> {
 	const tmpDir = `/tmp/yt-extract-${Date.now()}`;
 
 	try {
@@ -209,36 +281,51 @@ Install with: brew install yt-dlp`,
 			};
 		}
 
-		const result =
-			await Bun.$`yt-dlp --write-auto-sub --sub-lang en --skip-download -o "${tmpDir}/%(id)s" ${url}`
+		// Detect native language if not specified
+		let subLang = lang;
+		if (!subLang) {
+			const langResult = await detectVideoLanguage(url);
+			if (!langResult.ok) return langResult;
+			subLang = langResult.data;
+		}
+
+		// Try manual subs first, then fall back to auto-subs
+		const manualResult =
+			await Bun.$`yt-dlp --write-sub --sub-lang ${subLang} --skip-download -o "${tmpDir}/%(id)s" ${url}`
 				.quiet()
 				.nothrow();
 
-		if (result.exitCode !== 0) {
-			return parseYtDlpError(result.stderr.toString());
+		let foundSubs = await findSubtitleFile(tmpDir);
+
+		if (!foundSubs) {
+			// Fall back to auto-generated subs in native language
+			const autoResult =
+				await Bun.$`yt-dlp --write-auto-sub --sub-lang ${subLang} --skip-download -o "${tmpDir}/%(id)s" ${url}`
+					.quiet()
+					.nothrow();
+
+			if (autoResult.exitCode !== 0 && manualResult.exitCode !== 0) {
+				return parseYtDlpError(
+					autoResult.stderr.toString() || manualResult.stderr.toString(),
+				);
+			}
+
+			foundSubs = await findSubtitleFile(tmpDir);
 		}
 
-		const vttFiles = await Array.fromAsync(new Bun.Glob("*.vtt").scan(tmpDir));
-		if (vttFiles.length > 0) {
-			const content = await Bun.file(`${tmpDir}/${vttFiles[0]}`).text();
-			return { ok: true, data: parseVtt(content) };
-		}
-
-		const srtFiles = await Array.fromAsync(new Bun.Glob("*.srt").scan(tmpDir));
-		if (srtFiles.length > 0) {
-			const content = await Bun.file(`${tmpDir}/${srtFiles[0]}`).text();
-			return { ok: true, data: parseSrt(content) };
-		}
-
-		return {
-			ok: false,
-			error: {
-				type: "no_subtitles",
-				message: `No subtitles available for this video.
+		if (!foundSubs) {
+			return {
+				ok: false,
+				error: {
+					type: "no_subtitles",
+					message: `No subtitles available for this video.
 
 The video may not have captions enabled.`,
-			},
-		};
+				},
+			};
+		}
+
+		return { ok: true, data: foundSubs };
 	} finally {
 		await Bun.$`rm -rf ${tmpDir}`.quiet().nothrow();
 	}
@@ -246,11 +333,12 @@ The video may not have captions enabled.`,
 
 async function extractTranscript(
 	url: string,
+	lang?: string,
 ): Promise<Result<ExtractionResult, ExtractionError>> {
 	const urlResult = validateYouTubeUrl(url);
 	if (!urlResult.ok) return urlResult;
 
-	const extractResult = await runYtDlp(urlResult.data.url);
+	const extractResult = await runYtDlp(urlResult.data.url, lang);
 	if (!extractResult.ok) return extractResult;
 
 	return {
@@ -590,18 +678,23 @@ Re-extracted at: ${now}${warningMessage}`,
 }
 
 if (import.meta.main) {
-	const arg1 = Bun.argv[2];
-	const arg2 = Bun.argv[3];
+	const args = Bun.argv.slice(2);
 
-	if (!arg1 || arg1 === "--help" || arg1 === "-h") {
-		console.log(`Usage: extract <youtube-url>
+	if (args.length === 0 || args.includes("--help") || args.includes("-h")) {
+		console.log(`Usage: extract [--lang <code>] <youtube-url>
        extract --re-extract <slug>
 
 Extract transcript from a YouTube video.
+By default, extracts subtitles in the video's native language.
+
+Options:
+  --lang <code>  Subtitle language code (e.g. en, zh, ja, ko)
+                 Defaults to video's native language
 
 Examples:
   extract "https://www.youtube.com/watch?v=jNQXAC9IVRw"
-  extract "https://youtu.be/jNQXAC9IVRw"
+  extract --lang en "https://youtube.com/watch?v=VIDEO_ID"
+  extract --lang zh "https://youtu.be/VIDEO_ID"
 
 Re-extract existing content:
   extract --re-extract VIDEO_ID
@@ -618,15 +711,27 @@ Exit codes:
 		process.exit(0);
 	}
 
+	// Parse --lang flag
+	let lang: string | undefined;
+	const langIdx = args.indexOf("--lang");
+	if (langIdx !== -1) {
+		lang = args[langIdx + 1];
+		if (!lang || lang.startsWith("--")) {
+			console.error("Error: --lang requires a language code (e.g. en, zh, ja)");
+			process.exit(1);
+		}
+		args.splice(langIdx, 2);
+	}
+
 	// Handle --re-extract flag
-	if (arg1 === "--re-extract") {
-		if (!arg2) {
+	if (args[0] === "--re-extract") {
+		if (!args[1]) {
 			console.error("Error: --re-extract requires a library slug.\n");
 			console.error("Usage: extract --re-extract <slug>");
 			process.exit(EXIT_CODES.re_extract_error);
 		}
 
-		const result = await reExtract(arg2);
+		const result = await reExtract(args[1]);
 
 		if (!result.ok) {
 			console.error(result.error.message);
@@ -638,7 +743,13 @@ Exit codes:
 	}
 
 	// Normal extraction mode
-	const result = await extractTranscript(arg1);
+	const url = args[0];
+	if (!url) {
+		console.error("Error: YouTube URL is required.");
+		process.exit(1);
+	}
+
+	const result = await extractTranscript(url, lang);
 
 	if (!result.ok) {
 		console.error(result.error.message);
@@ -654,9 +765,12 @@ Exit codes:
 export {
 	extractTranscript,
 	validateYouTubeUrl,
+	decodeHtmlEntities,
+	detectVideoLanguage,
 	parseVtt,
 	parseSrt,
 	parseYtDlpError,
+	findSubtitleFile,
 	findLibraryEntry,
 	parseTranscriptFrontmatter,
 	readEntryMetadata,
